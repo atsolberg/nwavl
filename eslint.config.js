@@ -1,4 +1,4 @@
-import { default as defaultConfig } from '@epic-web/config/eslint'
+import { default as defaultConfig } from '@epic-web/config/eslint';
 
 /** @type {import("eslint").Linter.Config} */
 export default [
@@ -11,4 +11,4 @@ export default [
   {
     ignores: ['.react-router/*'],
   },
-]
+];

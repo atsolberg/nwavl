@@ -1,75 +1,75 @@
-import crypto from 'node:crypto'
-import { type Connection, type Password, type User } from '@prisma/client'
-import bcrypt from 'bcryptjs'
-import { redirect } from 'react-router'
-import { Authenticator } from 'remix-auth'
-import { safeRedirect } from 'remix-utils/safe-redirect'
-import { providers } from './connections.server.ts'
-import { prisma } from './db.server.ts'
-import { combineHeaders, downloadFile } from './misc.tsx'
-import { type ProviderUser } from './providers/provider.ts'
-import { authSessionStorage } from './session.server.ts'
-import { uploadProfileImage } from './storage.server.ts'
+import crypto from 'node:crypto';
+import { type Connection, type Password, type User } from '@prisma/client';
+import bcrypt from 'bcryptjs';
+import { redirect } from 'react-router';
+import { Authenticator } from 'remix-auth';
+import { safeRedirect } from 'remix-utils/safe-redirect';
+import { providers } from './connections.server.ts';
+import { prisma } from './db.server.ts';
+import { combineHeaders, downloadFile } from './misc.tsx';
+import { type ProviderUser } from './providers/provider.ts';
+import { authSessionStorage } from './session.server.ts';
+import { uploadProfileImage } from './storage.server.ts';
 
-export const SESSION_EXPIRATION_TIME = 1000 * 60 * 60 * 24 * 30
+export const SESSION_EXPIRATION_TIME = 1000 * 60 * 60 * 24 * 30;
 export const getSessionExpirationDate = () =>
-  new Date(Date.now() + SESSION_EXPIRATION_TIME)
+  new Date(Date.now() + SESSION_EXPIRATION_TIME);
 
-export const sessionKey = 'sessionId'
+export const sessionKey = 'sessionId';
 
-export const authenticator = new Authenticator<ProviderUser>()
+export const authenticator = new Authenticator<ProviderUser>();
 
 for (const [providerName, provider] of Object.entries(providers)) {
-  const strategy = provider.getAuthStrategy()
+  const strategy = provider.getAuthStrategy();
   if (strategy) {
-    authenticator.use(strategy, providerName)
+    authenticator.use(strategy, providerName);
   }
 }
 
 export async function getUserId(request: Request) {
   const authSession = await authSessionStorage.getSession(
     request.headers.get('cookie')
-  )
-  const sessionId = authSession.get(sessionKey)
-  if (!sessionId) return null
+  );
+  const sessionId = authSession.get(sessionKey);
+  if (!sessionId) return null;
   const session = await prisma.session.findUnique({
     select: { userId: true },
     where: { id: sessionId, expirationDate: { gt: new Date() } },
-  })
+  });
   if (!session?.userId) {
     throw redirect('/', {
       headers: {
         'set-cookie': await authSessionStorage.destroySession(authSession),
       },
-    })
+    });
   }
-  return session.userId
+  return session.userId;
 }
 
 export async function requireUserId(
   request: Request,
   { redirectTo }: { redirectTo?: string | null } = {}
 ) {
-  const userId = await getUserId(request)
+  const userId = await getUserId(request);
   if (!userId) {
-    const requestUrl = new URL(request.url)
+    const requestUrl = new URL(request.url);
     redirectTo =
       redirectTo === null
         ? null
-        : (redirectTo ?? `${requestUrl.pathname}${requestUrl.search}`)
-    const loginParams = redirectTo ? new URLSearchParams({ redirectTo }) : null
+        : (redirectTo ?? `${requestUrl.pathname}${requestUrl.search}`);
+    const loginParams = redirectTo ? new URLSearchParams({ redirectTo }) : null;
     const loginRedirect = ['/login', loginParams?.toString()]
       .filter(Boolean)
-      .join('?')
-    throw redirect(loginRedirect)
+      .join('?');
+    throw redirect(loginRedirect);
   }
-  return userId
+  return userId;
 }
 
 export async function requireAnonymous(request: Request) {
-  const userId = await getUserId(request)
+  const userId = await getUserId(request);
   if (userId) {
-    throw redirect('/')
+    throw redirect('/');
   }
 }
 
@@ -77,29 +77,29 @@ export async function login({
   username,
   password,
 }: {
-  username: User['username']
-  password: string
+  username: User['username'];
+  password: string;
 }) {
-  const user = await verifyUserPassword({ username }, password)
-  if (!user) return null
+  const user = await verifyUserPassword({ username }, password);
+  if (!user) return null;
   const session = await prisma.session.create({
     select: { id: true, expirationDate: true, userId: true },
     data: {
       expirationDate: getSessionExpirationDate(),
       userId: user.id,
     },
-  })
-  return session
+  });
+  return session;
 }
 
 export async function resetUserPassword({
   username,
   password,
 }: {
-  username: User['username']
-  password: string
+  username: User['username'];
+  password: string;
 }) {
-  const hashedPassword = await getPasswordHash(password)
+  const hashedPassword = await getPasswordHash(password);
   return prisma.user.update({
     where: { username },
     data: {
@@ -109,7 +109,7 @@ export async function resetUserPassword({
         },
       },
     },
-  })
+  });
 }
 
 export async function signup({
@@ -118,12 +118,12 @@ export async function signup({
   password,
   name,
 }: {
-  email: User['email']
-  username: User['username']
-  name: User['name']
-  password: string
+  email: User['email'];
+  username: User['username'];
+  name: User['name'];
+  password: string;
 }) {
-  const hashedPassword = await getPasswordHash(password)
+  const hashedPassword = await getPasswordHash(password);
 
   const session = await prisma.session.create({
     data: {
@@ -143,9 +143,9 @@ export async function signup({
       },
     },
     select: { id: true, expirationDate: true },
-  })
+  });
 
-  return session
+  return session;
 }
 
 export async function signupWithConnection({
@@ -156,12 +156,12 @@ export async function signupWithConnection({
   providerName,
   imageUrl,
 }: {
-  email: User['email']
-  username: User['username']
-  name: User['name']
-  providerId: Connection['providerId']
-  providerName: Connection['providerName']
-  imageUrl?: string
+  email: User['email'];
+  username: User['username'];
+  name: User['name'];
+  providerId: Connection['providerId'];
+  providerName: Connection['providerName'];
+  imageUrl?: string;
 }) {
   const user = await prisma.user.create({
     data: {
@@ -172,10 +172,10 @@ export async function signupWithConnection({
       connections: { create: { providerId, providerName } },
     },
     select: { id: true },
-  })
+  });
 
   if (imageUrl) {
-    const imageFile = await downloadFile(imageUrl)
+    const imageFile = await downloadFile(imageUrl);
     await prisma.user.update({
       where: { id: user.id },
       data: {
@@ -185,7 +185,7 @@ export async function signupWithConnection({
           },
         },
       },
-    })
+    });
   }
 
   // Create and return the session
@@ -195,9 +195,9 @@ export async function signupWithConnection({
       userId: user.id,
     },
     select: { id: true, expirationDate: true },
-  })
+  });
 
-  return session
+  return session;
 }
 
 export async function logout(
@@ -205,21 +205,23 @@ export async function logout(
     request,
     redirectTo = '/',
   }: {
-    request: Request
-    redirectTo?: string
+    request: Request;
+    redirectTo?: string;
   },
   responseInit?: ResponseInit
 ) {
   const authSession = await authSessionStorage.getSession(
     request.headers.get('cookie')
-  )
-  const sessionId = authSession.get(sessionKey)
+  );
+  const sessionId = authSession.get(sessionKey);
   // if this fails, we still need to delete the session from the user's browser
   // and it doesn't do any harm staying in the db anyway.
   if (sessionId) {
     // the .catch is important because that's what triggers the query.
     // learn more about PrismaPromise: https://www.prisma.io/docs/orm/reference/prisma-client-reference#prismapromise-behavior
-    void prisma.session.deleteMany({ where: { id: sessionId } }).catch(() => {})
+    void prisma.session
+      .deleteMany({ where: { id: sessionId } })
+      .catch(() => {});
   }
   throw redirect(safeRedirect(redirectTo), {
     ...responseInit,
@@ -227,12 +229,12 @@ export async function logout(
       { 'set-cookie': await authSessionStorage.destroySession(authSession) },
       responseInit?.headers
     ),
-  })
+  });
 }
 
 export async function getPasswordHash(password: string) {
-  const hash = await bcrypt.hash(password, 10)
-  return hash
+  const hash = await bcrypt.hash(password, 10);
+  return hash;
 }
 
 export async function verifyUserPassword(
@@ -242,19 +244,22 @@ export async function verifyUserPassword(
   const userWithPassword = await prisma.user.findUnique({
     where,
     select: { id: true, password: { select: { hash: true } } },
-  })
+  });
 
   if (!userWithPassword || !userWithPassword.password) {
-    return null
+    return null;
   }
 
-  const isValid = await bcrypt.compare(password, userWithPassword.password.hash)
+  const isValid = await bcrypt.compare(
+    password,
+    userWithPassword.password.hash
+  );
 
   if (!isValid) {
-    return null
+    return null;
   }
 
-  return { id: userWithPassword.id }
+  return { id: userWithPassword.id };
 }
 
 export function getPasswordHashParts(password: string) {
@@ -262,33 +267,33 @@ export function getPasswordHashParts(password: string) {
     .createHash('sha1')
     .update(password, 'utf8')
     .digest('hex')
-    .toUpperCase()
-  return [hash.slice(0, 5), hash.slice(5)] as const
+    .toUpperCase();
+  return [hash.slice(0, 5), hash.slice(5)] as const;
 }
 
 export async function checkIsCommonPassword(password: string) {
-  const [prefix, suffix] = getPasswordHashParts(password)
+  const [prefix, suffix] = getPasswordHashParts(password);
 
   try {
     const response = await fetch(
       `https://api.pwnedpasswords.com/range/${prefix}`,
       { signal: AbortSignal.timeout(1000) }
-    )
+    );
 
-    if (!response.ok) return false
+    if (!response.ok) return false;
 
-    const data = await response.text()
+    const data = await response.text();
     return data.split(/\r?\n/).some(line => {
-      const [hashSuffix, ignoredPrevalenceCount] = line.split(':')
-      return hashSuffix === suffix
-    })
+      const [hashSuffix, ignoredPrevalenceCount] = line.split(':');
+      return hashSuffix === suffix;
+    });
   } catch (error) {
     if (error instanceof DOMException && error.name === 'TimeoutError') {
-      console.warn('Password check timed out')
-      return false
+      console.warn('Password check timed out');
+      return false;
     }
 
-    console.warn('Unknown error during password check', error)
-    return false
+    console.warn('Unknown error during password check', error);
+    return false;
   }
 }

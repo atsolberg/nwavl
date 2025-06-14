@@ -1,31 +1,31 @@
-import { useId } from 'react'
-import { Form, useSearchParams, useSubmit } from 'react-router'
-import { useDebounce, useIsPending } from '#app/utils/misc.tsx'
-import { Icon } from './ui/icon.tsx'
-import { Input } from './ui/input.tsx'
-import { Label } from './ui/label.tsx'
-import { StatusButton } from './ui/status-button.tsx'
+import { useId } from 'react';
+import { Form, useSearchParams, useSubmit } from 'react-router';
+import { useDebounce, useIsPending } from '#app/utils/misc.tsx';
+import { Icon } from './ui/icon.tsx';
+import { Input } from './ui/input.tsx';
+import { Label } from './ui/label.tsx';
+import { StatusButton } from './ui/status-button.tsx';
 
 export function SearchBar({
   status,
   autoFocus = false,
   autoSubmit = false,
 }: {
-  status: 'idle' | 'pending' | 'success' | 'error'
-  autoFocus?: boolean
-  autoSubmit?: boolean
+  status: 'idle' | 'pending' | 'success' | 'error';
+  autoFocus?: boolean;
+  autoSubmit?: boolean;
 }) {
-  const id = useId()
-  const [searchParams] = useSearchParams()
-  const submit = useSubmit()
+  const id = useId();
+  const [searchParams] = useSearchParams();
+  const submit = useSubmit();
   const isSubmitting = useIsPending({
     formMethod: 'GET',
     formAction: '/users',
-  })
+  });
 
   const handleFormChange = useDebounce(async (form: HTMLFormElement) => {
-    await submit(form)
-  }, 400)
+    await submit(form);
+  }, 400);
 
   return (
     <Form
@@ -59,5 +59,5 @@ export function SearchBar({
         </StatusButton>
       </div>
     </Form>
-  )
+  );
 }

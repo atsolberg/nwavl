@@ -1,30 +1,30 @@
-import { invariant } from '@epic-web/invariant'
-import * as E from '@react-email/components'
-import { data } from 'react-router'
+import { invariant } from '@epic-web/invariant';
+import * as E from '@react-email/components';
+import { data } from 'react-router';
 import {
   requireRecentVerification,
   type VerifyFunctionArgs,
-} from '#app/routes/_auth+/verify.server.ts'
-import { prisma } from '#app/utils/db.server.ts'
-import { sendEmail } from '#app/utils/email.server.ts'
-import { redirectWithToast } from '#app/utils/toast.server.ts'
-import { verifySessionStorage } from '#app/utils/verification.server.ts'
-import { newEmailAddressSessionKey } from './profile.change-email'
+} from '#app/routes/_auth+/verify.server.ts';
+import { prisma } from '#app/utils/db.server.ts';
+import { sendEmail } from '#app/utils/email.server.ts';
+import { redirectWithToast } from '#app/utils/toast.server.ts';
+import { verifySessionStorage } from '#app/utils/verification.server.ts';
+import { newEmailAddressSessionKey } from './profile.change-email';
 
 export async function handleVerification({
   request,
   submission,
 }: VerifyFunctionArgs) {
-  await requireRecentVerification(request)
+  await requireRecentVerification(request);
   invariant(
     submission.status === 'success',
     'Submission should be successful by now'
-  )
+  );
 
   const verifySession = await verifySessionStorage.getSession(
     request.headers.get('cookie')
-  )
-  const newEmail = verifySession.get(newEmailAddressSessionKey)
+  );
+  const newEmail = verifySession.get(newEmailAddressSessionKey);
   if (!newEmail) {
     return data(
       {
@@ -35,23 +35,23 @@ export async function handleVerification({
         }),
       },
       { status: 400 }
-    )
+    );
   }
   const preUpdateUser = await prisma.user.findFirstOrThrow({
     select: { email: true },
     where: { id: submission.value.target },
-  })
+  });
   const user = await prisma.user.update({
     where: { id: submission.value.target },
     select: { id: true, email: true, username: true },
     data: { email: newEmail },
-  })
+  });
 
   void sendEmail({
     to: preUpdateUser.email,
     subject: 'Epic Stack email changed',
     react: <EmailChangeNoticeEmail userId={user.id} />,
-  })
+  });
 
   return redirectWithToast(
     '/settings/profile',
@@ -65,15 +65,15 @@ export async function handleVerification({
         'set-cookie': await verifySessionStorage.destroySession(verifySession),
       },
     }
-  )
+  );
 }
 
 export function EmailChangeEmail({
   verifyUrl,
   otp,
 }: {
-  verifyUrl: string
-  otp: string
+  verifyUrl: string;
+  otp: string;
 }) {
   return (
     <E.Html lang="en" dir="ltr">
@@ -92,7 +92,7 @@ export function EmailChangeEmail({
         <E.Link href={verifyUrl}>{verifyUrl}</E.Link>
       </E.Container>
     </E.Html>
-  )
+  );
 }
 
 function EmailChangeNoticeEmail({ userId }: { userId: string }) {
@@ -120,5 +120,5 @@ function EmailChangeNoticeEmail({ userId }: { userId: string }) {
         </p>
       </E.Container>
     </E.Html>
-  )
+  );
 }

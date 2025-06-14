@@ -1,42 +1,42 @@
-import { getFormProps, getInputProps, useForm } from '@conform-to/react'
-import { getZodConstraint, parseWithZod } from '@conform-to/zod'
-import { type SEOHandle } from '@nasa-gcn/remix-seo'
-import * as QRCode from 'qrcode'
-import { data, redirect, Form, useNavigation } from 'react-router'
-import { z } from 'zod'
-import { ErrorList, OTPField } from '#app/components/forms.tsx'
-import { Icon } from '#app/components/ui/icon.tsx'
-import { StatusButton } from '#app/components/ui/status-button.tsx'
-import { isCodeValid } from '#app/routes/_auth+/verify.server.ts'
-import { requireUserId } from '#app/utils/auth.server.ts'
-import { prisma } from '#app/utils/db.server.ts'
-import { getDomainUrl, useIsPending } from '#app/utils/misc.tsx'
-import { redirectWithToast } from '#app/utils/toast.server.ts'
-import { getTOTPAuthUri } from '#app/utils/totp.server.ts'
-import { type Route } from './+types/profile.two-factor.verify.ts'
-import { type BreadcrumbHandle } from './profile.tsx'
-import { twoFAVerificationType } from './profile.two-factor.tsx'
+import { getFormProps, getInputProps, useForm } from '@conform-to/react';
+import { getZodConstraint, parseWithZod } from '@conform-to/zod';
+import { type SEOHandle } from '@nasa-gcn/remix-seo';
+import * as QRCode from 'qrcode';
+import { data, redirect, Form, useNavigation } from 'react-router';
+import { z } from 'zod';
+import { ErrorList, OTPField } from '#app/components/forms.tsx';
+import { Icon } from '#app/components/ui/icon.tsx';
+import { StatusButton } from '#app/components/ui/status-button.tsx';
+import { isCodeValid } from '#app/routes/_auth+/verify.server.ts';
+import { requireUserId } from '#app/utils/auth.server.ts';
+import { prisma } from '#app/utils/db.server.ts';
+import { getDomainUrl, useIsPending } from '#app/utils/misc.tsx';
+import { redirectWithToast } from '#app/utils/toast.server.ts';
+import { getTOTPAuthUri } from '#app/utils/totp.server.ts';
+import { type Route } from './+types/profile.two-factor.verify.ts';
+import { type BreadcrumbHandle } from './profile.tsx';
+import { twoFAVerificationType } from './profile.two-factor.tsx';
 
 export const handle: BreadcrumbHandle & SEOHandle = {
   breadcrumb: <Icon name="check">Verify</Icon>,
   getSitemapEntries: () => null,
-}
+};
 
-const CancelSchema = z.object({ intent: z.literal('cancel') })
+const CancelSchema = z.object({ intent: z.literal('cancel') });
 const VerifySchema = z.object({
   intent: z.literal('verify'),
   code: z.string().min(6).max(6),
-})
+});
 
 const ActionSchema = z.discriminatedUnion('intent', [
   CancelSchema,
   VerifySchema,
-])
+]);
 
-export const twoFAVerifyVerificationType = '2fa-verify'
+export const twoFAVerifyVerificationType = '2fa-verify';
 
 export async function loader({ request }: Route.LoaderArgs) {
-  const userId = await requireUserId(request)
+  const userId = await requireUserId(request);
   const verification = await prisma.verification.findUnique({
     where: {
       target_type: { type: twoFAVerifyVerificationType, target: userId },
@@ -48,62 +48,62 @@ export async function loader({ request }: Route.LoaderArgs) {
       period: true,
       digits: true,
     },
-  })
+  });
   if (!verification) {
-    return redirect('/settings/profile/two-factor')
+    return redirect('/settings/profile/two-factor');
   }
   const user = await prisma.user.findUniqueOrThrow({
     where: { id: userId },
     select: { email: true },
-  })
-  const issuer = new URL(getDomainUrl(request)).host
+  });
+  const issuer = new URL(getDomainUrl(request)).host;
   const otpUri = getTOTPAuthUri({
     ...verification,
     accountName: user.email,
     issuer,
-  })
-  const qrCode = await QRCode.toDataURL(otpUri)
-  return { otpUri, qrCode }
+  });
+  const qrCode = await QRCode.toDataURL(otpUri);
+  return { otpUri, qrCode };
 }
 
 export async function action({ request }: Route.ActionArgs) {
-  const userId = await requireUserId(request)
-  const formData = await request.formData()
+  const userId = await requireUserId(request);
+  const formData = await request.formData();
 
   const submission = await parseWithZod(formData, {
     schema: () =>
       ActionSchema.superRefine(async (data, ctx) => {
-        if (data.intent === 'cancel') return null
+        if (data.intent === 'cancel') return null;
         const codeIsValid = await isCodeValid({
           code: data.code,
           type: twoFAVerifyVerificationType,
           target: userId,
-        })
+        });
         if (!codeIsValid) {
           ctx.addIssue({
             path: ['code'],
             code: z.ZodIssueCode.custom,
             message: `Invalid code`,
-          })
-          return z.NEVER
+          });
+          return z.NEVER;
         }
       }),
     async: true,
-  })
+  });
 
   if (submission.status !== 'success') {
     return data(
       { result: submission.reply() },
       { status: submission.status === 'error' ? 400 : 200 }
-    )
+    );
   }
 
   switch (submission.value.intent) {
     case 'cancel': {
       await prisma.verification.deleteMany({
         where: { type: twoFAVerifyVerificationType, target: userId },
-      })
-      return redirect('/settings/profile/two-factor')
+      });
+      return redirect('/settings/profile/two-factor');
     }
     case 'verify': {
       await prisma.verification.update({
@@ -111,12 +111,12 @@ export async function action({ request }: Route.ActionArgs) {
           target_type: { type: twoFAVerifyVerificationType, target: userId },
         },
         data: { type: twoFAVerificationType },
-      })
+      });
       return redirectWithToast('/settings/profile/two-factor', {
         type: 'success',
         title: 'Enabled',
         description: 'Two-factor authentication has been enabled.',
-      })
+      });
     }
   }
 }
@@ -125,20 +125,20 @@ export default function TwoFactorRoute({
   loaderData,
   actionData,
 }: Route.ComponentProps) {
-  const navigation = useNavigation()
+  const navigation = useNavigation();
 
-  const isPending = useIsPending()
-  const pendingIntent = isPending ? navigation.formData?.get('intent') : null
+  const isPending = useIsPending();
+  const pendingIntent = isPending ? navigation.formData?.get('intent') : null;
 
   const [form, fields] = useForm({
     id: 'verify-form',
     constraint: getZodConstraint(ActionSchema),
     lastResult: actionData?.result,
     onValidate({ formData }) {
-      return parseWithZod(formData, { schema: ActionSchema })
+      return parseWithZod(formData, { schema: ActionSchema });
     },
-  })
-  const lastSubmissionIntent = fields.intent.value
+  });
+  const lastSubmissionIntent = fields.intent.value;
 
   return (
     <div>
@@ -223,5 +223,5 @@ export default function TwoFactorRoute({
         </div>
       </div>
     </div>
-  )
+  );
 }

@@ -1,31 +1,31 @@
-import { getFormProps, getInputProps, useForm } from '@conform-to/react'
-import { getZodConstraint, parseWithZod } from '@conform-to/zod'
-import { type SEOHandle } from '@nasa-gcn/remix-seo'
-import * as E from '@react-email/components'
-import { data, redirect, Link, useFetcher } from 'react-router'
-import { HoneypotInputs } from 'remix-utils/honeypot/react'
-import { z } from 'zod'
-import { GeneralErrorBoundary } from '#app/components/error-boundary.tsx'
-import { ErrorList, Field } from '#app/components/forms.tsx'
-import { StatusButton } from '#app/components/ui/status-button.tsx'
-import { prisma } from '#app/utils/db.server.ts'
-import { sendEmail } from '#app/utils/email.server.ts'
-import { checkHoneypot } from '#app/utils/honeypot.server.ts'
-import { EmailSchema, UsernameSchema } from '#app/utils/user-validation.ts'
-import { type Route } from './+types/forgot-password.ts'
-import { prepareVerification } from './verify.server.ts'
+import { getFormProps, getInputProps, useForm } from '@conform-to/react';
+import { getZodConstraint, parseWithZod } from '@conform-to/zod';
+import { type SEOHandle } from '@nasa-gcn/remix-seo';
+import * as E from '@react-email/components';
+import { data, redirect, Link, useFetcher } from 'react-router';
+import { HoneypotInputs } from 'remix-utils/honeypot/react';
+import { z } from 'zod';
+import { GeneralErrorBoundary } from '#app/components/error-boundary.tsx';
+import { ErrorList, Field } from '#app/components/forms.tsx';
+import { StatusButton } from '#app/components/ui/status-button.tsx';
+import { prisma } from '#app/utils/db.server.ts';
+import { sendEmail } from '#app/utils/email.server.ts';
+import { checkHoneypot } from '#app/utils/honeypot.server.ts';
+import { EmailSchema, UsernameSchema } from '#app/utils/user-validation.ts';
+import { type Route } from './+types/forgot-password.ts';
+import { prepareVerification } from './verify.server.ts';
 
 export const handle: SEOHandle = {
   getSitemapEntries: () => null,
-}
+};
 
 const ForgotPasswordSchema = z.object({
   usernameOrEmail: z.union([EmailSchema, UsernameSchema]),
-})
+});
 
 export async function action({ request }: Route.ActionArgs) {
-  const formData = await request.formData()
-  await checkHoneypot(formData)
+  const formData = await request.formData();
+  await checkHoneypot(formData);
   const submission = await parseWithZod(formData, {
     schema: ForgotPasswordSchema.superRefine(async (data, ctx) => {
       const user = await prisma.user.findFirst({
@@ -36,37 +36,37 @@ export async function action({ request }: Route.ActionArgs) {
           ],
         },
         select: { id: true },
-      })
+      });
       if (!user) {
         ctx.addIssue({
           path: ['usernameOrEmail'],
           code: z.ZodIssueCode.custom,
           message: 'No user exists with this username or email',
-        })
-        return
+        });
+        return;
       }
     }),
     async: true,
-  })
+  });
   if (submission.status !== 'success') {
     return data(
       { result: submission.reply() },
       { status: submission.status === 'error' ? 400 : 200 }
-    )
+    );
   }
-  const { usernameOrEmail } = submission.value
+  const { usernameOrEmail } = submission.value;
 
   const user = await prisma.user.findFirstOrThrow({
     where: { OR: [{ email: usernameOrEmail }, { username: usernameOrEmail }] },
     select: { email: true, username: true },
-  })
+  });
 
   const { verifyUrl, redirectTo, otp } = await prepareVerification({
     period: 10 * 60,
     request,
     type: 'reset-password',
     target: usernameOrEmail,
-  })
+  });
 
   const response = await sendEmail({
     to: user.email,
@@ -74,15 +74,15 @@ export async function action({ request }: Route.ActionArgs) {
     react: (
       <ForgotPasswordEmail onboardingUrl={verifyUrl.toString()} otp={otp} />
     ),
-  })
+  });
 
   if (response.status === 'success') {
-    return redirect(redirectTo.toString())
+    return redirect(redirectTo.toString());
   } else {
     return data(
       { result: submission.reply({ formErrors: [response.error.message] }) },
       { status: 500 }
-    )
+    );
   }
 }
 
@@ -90,8 +90,8 @@ function ForgotPasswordEmail({
   onboardingUrl,
   otp,
 }: {
-  onboardingUrl: string
-  otp: string
+  onboardingUrl: string;
+  otp: string;
 }) {
   return (
     <E.Html lang="en" dir="ltr">
@@ -110,25 +110,25 @@ function ForgotPasswordEmail({
         <E.Link href={onboardingUrl}>{onboardingUrl}</E.Link>
       </E.Container>
     </E.Html>
-  )
+  );
 }
 
 export const meta: Route.MetaFunction = () => {
-  return [{ title: 'Password Recovery for Epic Notes' }]
-}
+  return [{ title: 'Password Recovery for Epic Notes' }];
+};
 
 export default function ForgotPasswordRoute() {
-  const forgotPassword = useFetcher<typeof action>()
+  const forgotPassword = useFetcher<typeof action>();
 
   const [form, fields] = useForm({
     id: 'forgot-password-form',
     constraint: getZodConstraint(ForgotPasswordSchema),
     lastResult: forgotPassword.data?.result,
     onValidate({ formData }) {
-      return parseWithZod(formData, { schema: ForgotPasswordSchema })
+      return parseWithZod(formData, { schema: ForgotPasswordSchema });
     },
     shouldRevalidate: 'onBlur',
-  })
+  });
 
   return (
     <div className="container pt-20 pb-32">
@@ -181,9 +181,9 @@ export default function ForgotPasswordRoute() {
         </div>
       </div>
     </div>
-  )
+  );
 }
 
 export function ErrorBoundary() {
-  return <GeneralErrorBoundary />
+  return <GeneralErrorBoundary />;
 }

@@ -1,10 +1,10 @@
-import { type SVGProps } from 'react'
-import { cn } from '#app/utils/misc.tsx'
-import href from './icons/sprite.svg'
-import { type IconName } from '@/icon-name'
+import { type SVGProps } from 'react';
+import { cn } from '#app/utils/misc.tsx';
+import href from './icons/sprite.svg';
+import { type IconName } from '@/icon-name';
 
-export { href }
-export { IconName }
+export { href };
+export { IconName };
 
 const sizeClassName = {
   font: 'size-[1em]',
@@ -13,9 +13,9 @@ const sizeClassName = {
   md: 'size-5',
   lg: 'size-6',
   xl: 'size-7',
-} as const
+} as const;
 
-type Size = keyof typeof sizeClassName
+type Size = keyof typeof sizeClassName;
 
 const childrenSizeClassName = {
   font: 'gap-1.5',
@@ -24,7 +24,7 @@ const childrenSizeClassName = {
   md: 'gap-2',
   lg: 'gap-2',
   xl: 'gap-3',
-} satisfies Record<Size, string>
+} satisfies Record<Size, string>;
 
 /**
  * Renders an SVG icon. The icon defaults to the size of the font. To make it
@@ -45,9 +45,9 @@ export function Icon({
   children,
   ...props
 }: SVGProps<SVGSVGElement> & {
-  name: IconName
-  size?: Size
-  title?: string
+  name: IconName;
+  size?: Size;
+  title?: string;
 }) {
   if (children) {
     return (
@@ -63,7 +63,7 @@ export function Icon({
         />
         {children}
       </span>
-    )
+    );
   }
   return (
     <svg
@@ -73,5 +73,5 @@ export function Icon({
       {title ? <title>{title}</title> : null}
       <use href={`${href}#${name}`} />
     </svg>
-  )
+  );
 }

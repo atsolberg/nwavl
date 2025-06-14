@@ -1,5 +1,5 @@
-import { type CacheControlValue, parse, format } from '@tusbar/cache-control'
-import { type HeadersArgs } from 'react-router'
+import { type CacheControlValue, parse, format } from '@tusbar/cache-control';
+import { type HeadersArgs } from 'react-router';
 
 /**
  * A utility for handling route headers, merging common use-case headers.
@@ -15,25 +15,25 @@ export function pipeHeaders({
   actionHeaders,
   errorHeaders,
 }: HeadersArgs) {
-  const headers = new Headers()
+  const headers = new Headers();
 
   // get the one that's actually in use
-  let currentHeaders: Headers
+  let currentHeaders: Headers;
   if (errorHeaders !== undefined) {
-    currentHeaders = errorHeaders
+    currentHeaders = errorHeaders;
   } else if (loaderHeaders.entries().next().done) {
-    currentHeaders = actionHeaders
+    currentHeaders = actionHeaders;
   } else {
-    currentHeaders = loaderHeaders
+    currentHeaders = loaderHeaders;
   }
 
   // take in useful headers route loader/action
   // pass this point currentHeaders can be ignored
-  const forwardHeaders = ['Cache-Control', 'Vary', 'Server-Timing']
+  const forwardHeaders = ['Cache-Control', 'Vary', 'Server-Timing'];
   for (const headerName of forwardHeaders) {
-    const header = currentHeaders.get(headerName)
+    const header = currentHeaders.get(headerName);
     if (header) {
-      headers.set(headerName, header)
+      headers.set(headerName, header);
     }
   }
 
@@ -43,30 +43,30 @@ export function pipeHeaders({
       parentHeaders.get('Cache-Control'),
       headers.get('Cache-Control')
     )
-  )
+  );
 
   // append useful parent headers
-  const inheritHeaders = ['Vary', 'Server-Timing']
+  const inheritHeaders = ['Vary', 'Server-Timing'];
   for (const headerName of inheritHeaders) {
-    const header = parentHeaders.get(headerName)
+    const header = parentHeaders.get(headerName);
     if (header) {
-      headers.append(headerName, header)
+      headers.append(headerName, header);
     }
   }
 
   // fallback to parent headers if loader don't have
-  const fallbackHeaders = ['Cache-Control', 'Vary']
+  const fallbackHeaders = ['Cache-Control', 'Vary'];
   for (const headerName of fallbackHeaders) {
     if (headers.has(headerName)) {
-      continue
+      continue;
     }
-    const fallbackHeader = parentHeaders.get(headerName)
+    const fallbackHeader = parentHeaders.get(headerName);
     if (fallbackHeader) {
-      headers.set(headerName, fallbackHeader)
+      headers.set(headerName, fallbackHeader);
     }
   }
 
-  return headers
+  return headers;
 }
 
 /**
@@ -81,34 +81,34 @@ export function getConservativeCacheControl(
       .map(header => parse(header))
       .reduce<CacheControlValue>((acc, current) => {
         for (const key in current) {
-          const directive = key as keyof Required<CacheControlValue> // keyof CacheControl includes functions
+          const directive = key as keyof Required<CacheControlValue>; // keyof CacheControl includes functions
 
-          const currentValue = current[directive]
+          const currentValue = current[directive];
 
           switch (typeof currentValue) {
             case 'boolean': {
               if (currentValue) {
-                acc[directive] = true as any
+                acc[directive] = true as any;
               }
 
-              break
+              break;
             }
             case 'number': {
-              const accValue = acc[directive] as number | undefined
+              const accValue = acc[directive] as number | undefined;
 
               if (accValue === undefined) {
-                acc[directive] = currentValue as any
+                acc[directive] = currentValue as any;
               } else {
-                const result = Math.min(accValue, currentValue)
-                acc[directive] = result as any
+                const result = Math.min(accValue, currentValue);
+                acc[directive] = result as any;
               }
 
-              break
+              break;
             }
           }
         }
 
-        return acc
+        return acc;
       }, {})
-  )
+  );
 }

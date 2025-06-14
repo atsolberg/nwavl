@@ -1,12 +1,12 @@
-import * as TooltipPrimitive from '@radix-ui/react-tooltip'
-import * as React from 'react'
+import * as TooltipPrimitive from '@radix-ui/react-tooltip';
+import * as React from 'react';
 
-import { cn } from '#app/utils/misc.tsx'
+import { cn } from '#app/utils/misc.tsx';
 
 function TooltipProvider(
   props: React.ComponentProps<typeof TooltipPrimitive.Provider>
 ) {
-  return <TooltipPrimitive.Provider data-slot="tooltip-provider" {...props} />
+  return <TooltipPrimitive.Provider data-slot="tooltip-provider" {...props} />;
 }
 
 function Tooltip(props: React.ComponentProps<typeof TooltipPrimitive.Root>) {
@@ -14,13 +14,13 @@ function Tooltip(props: React.ComponentProps<typeof TooltipPrimitive.Root>) {
     <TooltipProvider>
       <TooltipPrimitive.Root data-slot="tooltip" {...props} />
     </TooltipProvider>
-  )
+  );
 }
 
 function TooltipTrigger(
   props: React.ComponentProps<typeof TooltipPrimitive.Trigger>
 ) {
-  return <TooltipPrimitive.Trigger data-slot="tooltip-trigger" {...props} />
+  return <TooltipPrimitive.Trigger data-slot="tooltip-trigger" {...props} />;
 }
 
 const TooltipContent = ({
@@ -37,6 +37,6 @@ const TooltipContent = ({
     )}
     {...props}
   />
-)
+);
 
-export { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider }
+export { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider };

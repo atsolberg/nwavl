@@ -1,15 +1,15 @@
-import { reactRouter } from '@react-router/dev/vite'
+import { reactRouter } from '@react-router/dev/vite';
 import {
   type SentryReactRouterBuildOptions,
   sentryReactRouter,
-} from '@sentry/react-router'
-import tailwindcss from '@tailwindcss/vite'
-import { reactRouterDevTools } from 'react-router-devtools'
-import { defineConfig } from 'vite'
-import { envOnlyMacros } from 'vite-env-only'
-import { iconsSpritesheet } from 'vite-plugin-icons-spritesheet'
+} from '@sentry/react-router';
+import tailwindcss from '@tailwindcss/vite';
+import { reactRouterDevTools } from 'react-router-devtools';
+import { defineConfig } from 'vite';
+import { envOnlyMacros } from 'vite-env-only';
+import { iconsSpritesheet } from 'vite-plugin-icons-spritesheet';
 
-const MODE = process.env.NODE_ENV
+const MODE = process.env.NODE_ENV;
 
 export default defineConfig(config => ({
   build: {
@@ -25,7 +25,7 @@ export default defineConfig(config => ({
         source.endsWith('favicon.svg') ||
         source.endsWith('apple-touch-icon.png')
       ) {
-        return false
+        return false;
       }
     },
 
@@ -66,7 +66,7 @@ export default defineConfig(config => ({
       all: true,
     },
   },
-}))
+}));
 
 const sentryConfig: SentryReactRouterBuildOptions = {
   authToken: process.env.SENTRY_AUTH_TOKEN,
@@ -84,4 +84,4 @@ const sentryConfig: SentryReactRouterBuildOptions = {
       filesToDeleteAfterUpload: ['./build/**/*.map', '.server-build/**/*.map'],
     },
   },
-}
+};

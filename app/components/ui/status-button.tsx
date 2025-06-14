@@ -1,13 +1,13 @@
-import { useSpinDelay } from 'spin-delay'
-import { cn } from '#app/utils/misc.tsx'
-import { Button, type ButtonVariant } from './button.tsx'
-import { Icon } from './icon.tsx'
+import { useSpinDelay } from 'spin-delay';
+import { cn } from '#app/utils/misc.tsx';
+import { Button, type ButtonVariant } from './button.tsx';
+import { Icon } from './icon.tsx';
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from './tooltip.tsx'
+} from './tooltip.tsx';
 
 export const StatusButton = ({
   message,
@@ -18,15 +18,15 @@ export const StatusButton = ({
   ...props
 }: React.ComponentProps<'button'> &
   ButtonVariant & {
-    status: 'pending' | 'success' | 'error' | 'idle'
-    message?: string | null
-    spinDelay?: Parameters<typeof useSpinDelay>[1]
+    status: 'pending' | 'success' | 'error' | 'idle';
+    message?: string | null;
+    spinDelay?: Parameters<typeof useSpinDelay>[1];
   }) => {
   const delayedPending = useSpinDelay(status === 'pending', {
     delay: 400,
     minDuration: 300,
     ...spinDelay,
-  })
+  });
   const companion = {
     pending: delayedPending ? (
       <div
@@ -57,7 +57,7 @@ export const StatusButton = ({
       </div>
     ),
     idle: null,
-  }[status]
+  }[status];
 
   return (
     <Button className={cn('flex justify-center gap-4', className)} {...props}>
@@ -73,6 +73,6 @@ export const StatusButton = ({
         companion
       )}
     </Button>
-  )
-}
-StatusButton.displayName = 'Button'
+  );
+};
+StatusButton.displayName = 'Button';

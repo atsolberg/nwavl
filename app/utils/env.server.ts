@@ -1,4 +1,4 @@
-import { z } from 'zod'
+import { z } from 'zod';
 
 const schema = z.object({
   NODE_ENV: z.enum(['production', 'development', 'test'] as const),
@@ -26,7 +26,7 @@ const schema = z.object({
   AWS_REGION: z.string(),
   AWS_ENDPOINT_URL_S3: z.string().url(),
   BUCKET_NAME: z.string(),
-})
+});
 
 declare global {
   namespace NodeJS {
@@ -35,15 +35,15 @@ declare global {
 }
 
 export function init() {
-  const parsed = schema.safeParse(process.env)
+  const parsed = schema.safeParse(process.env);
 
   if (parsed.success === false) {
     console.error(
       '❌ Invalid environment variables:',
       parsed.error.flatten().fieldErrors
-    )
+    );
 
-    throw new Error('Invalid environment variables')
+    throw new Error('Invalid environment variables');
   }
 }
 
@@ -61,14 +61,14 @@ export function getEnv() {
     MODE: process.env.NODE_ENV,
     SENTRY_DSN: process.env.SENTRY_DSN,
     ALLOW_INDEXING: process.env.ALLOW_INDEXING,
-  }
+  };
 }
 
-type ENV = ReturnType<typeof getEnv>
+type ENV = ReturnType<typeof getEnv>;
 
 declare global {
-  var ENV: ENV
+  var ENV: ENV;
   interface Window {
-    ENV: ENV
+    ENV: ENV;
   }
 }

@@ -1,4 +1,4 @@
-import defaultConfig from '@epic-web/config/prettier'
+import defaultConfig from '@epic-web/config/prettier';
 
 /** @type {import("prettier").Options} */
 export default {
@@ -6,6 +6,6 @@ export default {
   singleQuote: true,
   trailingComma: 'es5',
   arrowParens: 'avoid',
-  semi: false,
+  semi: true,
   useTabs: false,
-}
+};

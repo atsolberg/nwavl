@@ -6,29 +6,29 @@ import {
   getTextareaProps,
   useForm,
   type FieldMetadata,
-} from '@conform-to/react'
-import { getZodConstraint, parseWithZod } from '@conform-to/zod'
-import { Img } from 'openimg/react'
-import { useState } from 'react'
-import { Form } from 'react-router'
-import { z } from 'zod'
-import { GeneralErrorBoundary } from '#app/components/error-boundary.tsx'
-import { floatingToolbarClassName } from '#app/components/floating-toolbar.tsx'
-import { ErrorList, Field, TextareaField } from '#app/components/forms.tsx'
-import { Button } from '#app/components/ui/button.tsx'
-import { Icon } from '#app/components/ui/icon.tsx'
-import { Label } from '#app/components/ui/label.tsx'
-import { StatusButton } from '#app/components/ui/status-button.tsx'
-import { Textarea } from '#app/components/ui/textarea.tsx'
-import { cn, getNoteImgSrc, useIsPending } from '#app/utils/misc.tsx'
-import { type Info } from './+types/notes.$noteId_.edit.ts'
+} from '@conform-to/react';
+import { getZodConstraint, parseWithZod } from '@conform-to/zod';
+import { Img } from 'openimg/react';
+import { useState } from 'react';
+import { Form } from 'react-router';
+import { z } from 'zod';
+import { GeneralErrorBoundary } from '#app/components/error-boundary.tsx';
+import { floatingToolbarClassName } from '#app/components/floating-toolbar.tsx';
+import { ErrorList, Field, TextareaField } from '#app/components/forms.tsx';
+import { Button } from '#app/components/ui/button.tsx';
+import { Icon } from '#app/components/ui/icon.tsx';
+import { Label } from '#app/components/ui/label.tsx';
+import { StatusButton } from '#app/components/ui/status-button.tsx';
+import { Textarea } from '#app/components/ui/textarea.tsx';
+import { cn, getNoteImgSrc, useIsPending } from '#app/utils/misc.tsx';
+import { type Info } from './+types/notes.$noteId_.edit.ts';
 
-const titleMinLength = 1
-const titleMaxLength = 100
-const contentMinLength = 1
-const contentMaxLength = 10000
+const titleMinLength = 1;
+const titleMaxLength = 100;
+const contentMinLength = 1;
+const contentMaxLength = 10000;
 
-export const MAX_UPLOAD_SIZE = 1024 * 1024 * 3 // 3MB
+export const MAX_UPLOAD_SIZE = 1024 * 1024 * 3; // 3MB
 
 const ImageFieldsetSchema = z.object({
   id: z.string().optional(),
@@ -36,43 +36,43 @@ const ImageFieldsetSchema = z.object({
     .instanceof(File)
     .optional()
     .refine(file => {
-      return !file || file.size <= MAX_UPLOAD_SIZE
+      return !file || file.size <= MAX_UPLOAD_SIZE;
     }, 'File size must be less than 3MB'),
   altText: z.string().optional(),
-})
+});
 
-export type ImageFieldset = z.infer<typeof ImageFieldsetSchema>
+export type ImageFieldset = z.infer<typeof ImageFieldsetSchema>;
 
 export const NoteEditorSchema = z.object({
   id: z.string().optional(),
   title: z.string().min(titleMinLength).max(titleMaxLength),
   content: z.string().min(contentMinLength).max(contentMaxLength),
   images: z.array(ImageFieldsetSchema).max(5).optional(),
-})
+});
 
 export function NoteEditor({
   note,
   actionData,
 }: {
-  note?: Info['loaderData']['note']
-  actionData?: Info['actionData']
+  note?: Info['loaderData']['note'];
+  actionData?: Info['actionData'];
 }) {
-  const isPending = useIsPending()
+  const isPending = useIsPending();
 
   const [form, fields] = useForm({
     id: 'note-editor',
     constraint: getZodConstraint(NoteEditorSchema),
     lastResult: actionData?.result,
     onValidate({ formData }) {
-      return parseWithZod(formData, { schema: NoteEditorSchema })
+      return parseWithZod(formData, { schema: NoteEditorSchema });
     },
     defaultValue: {
       ...note,
       images: note?.images ?? [{}],
     },
     shouldRevalidate: 'onBlur',
-  })
-  const imageList = fields.images.getFieldList()
+  });
+  const imageList = fields.images.getFieldList();
 
   return (
     <div className="absolute inset-0">
@@ -110,10 +110,10 @@ export function NoteEditor({
               <Label>Images</Label>
               <ul className="flex flex-col gap-4">
                 {imageList.map((imageMeta, index) => {
-                  const imageMetaId = imageMeta.getFieldset().id.value
+                  const imageMetaId = imageMeta.getFieldset().id.value;
                   const image = note?.images.find(
                     ({ id }) => id === imageMetaId
-                  )
+                  );
                   return (
                     <li
                       key={imageMeta.key}
@@ -138,7 +138,7 @@ export function NoteEditor({
                         objectKey={image?.objectKey}
                       />
                     </li>
-                  )
+                  );
                 })}
               </ul>
             </div>
@@ -169,22 +169,22 @@ export function NoteEditor({
         </div>
       </FormProvider>
     </div>
-  )
+  );
 }
 
 function ImageChooser({
   meta,
   objectKey,
 }: {
-  meta: FieldMetadata<ImageFieldset>
-  objectKey: string | undefined
+  meta: FieldMetadata<ImageFieldset>;
+  objectKey: string | undefined;
 }) {
-  const fields = meta.getFieldset()
-  const existingImage = Boolean(fields.id.initialValue)
+  const fields = meta.getFieldset();
+  const existingImage = Boolean(fields.id.initialValue);
   const [previewImage, setPreviewImage] = useState<string | null>(
     objectKey ? getNoteImgSrc(objectKey) : null
-  )
-  const [altText, setAltText] = useState(fields.altText.initialValue ?? '')
+  );
+  const [altText, setAltText] = useState(fields.altText.initialValue ?? '');
 
   return (
     <fieldset {...getFieldsetProps(meta)}>
@@ -237,16 +237,16 @@ function ImageChooser({
                 aria-label="Image"
                 className="absolute top-0 left-0 z-0 size-32 cursor-pointer opacity-0"
                 onChange={event => {
-                  const file = event.target.files?.[0]
+                  const file = event.target.files?.[0];
 
                   if (file) {
-                    const reader = new FileReader()
+                    const reader = new FileReader();
                     reader.onloadend = () => {
-                      setPreviewImage(reader.result as string)
-                    }
-                    reader.readAsDataURL(file)
+                      setPreviewImage(reader.result as string);
+                    };
+                    reader.readAsDataURL(file);
                   } else {
-                    setPreviewImage(null)
+                    setPreviewImage(null);
                   }
                 }}
                 accept="image/*"
@@ -278,7 +278,7 @@ function ImageChooser({
         <ErrorList id={meta.errorId} errors={meta.errors} />
       </div>
     </fieldset>
-  )
+  );
 }
 
 export function ErrorBoundary() {
@@ -290,5 +290,5 @@ export function ErrorBoundary() {
         ),
       }}
     />
-  )
+  );
 }

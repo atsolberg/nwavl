@@ -1,12 +1,12 @@
-import { invariantResponse } from '@epic-web/invariant'
-import { Img } from 'openimg/react'
-import { Link, NavLink, Outlet } from 'react-router'
-import { GeneralErrorBoundary } from '#app/components/error-boundary.tsx'
-import { Icon } from '#app/components/ui/icon.tsx'
-import { prisma } from '#app/utils/db.server.ts'
-import { cn, getUserImgSrc } from '#app/utils/misc.tsx'
-import { useOptionalUser } from '#app/utils/user.ts'
-import { type Route } from './+types/notes.ts'
+import { invariantResponse } from '@epic-web/invariant';
+import { Img } from 'openimg/react';
+import { Link, NavLink, Outlet } from 'react-router';
+import { GeneralErrorBoundary } from '#app/components/error-boundary.tsx';
+import { Icon } from '#app/components/ui/icon.tsx';
+import { prisma } from '#app/utils/db.server.ts';
+import { cn, getUserImgSrc } from '#app/utils/misc.tsx';
+import { useOptionalUser } from '#app/utils/user.ts';
+import { type Route } from './+types/notes.ts';
 
 export async function loader({ params }: Route.LoaderArgs) {
   const owner = await prisma.user.findFirst({
@@ -18,19 +18,19 @@ export async function loader({ params }: Route.LoaderArgs) {
       notes: { select: { id: true, title: true } },
     },
     where: { username: params.username },
-  })
+  });
 
-  invariantResponse(owner, 'Owner not found', { status: 404 })
+  invariantResponse(owner, 'Owner not found', { status: 404 });
 
-  return { owner }
+  return { owner };
 }
 
 export default function NotesRoute({ loaderData }: Route.ComponentProps) {
-  const user = useOptionalUser()
-  const isOwner = user?.id === loaderData.owner.id
-  const ownerDisplayName = loaderData.owner.name ?? loaderData.owner.username
+  const user = useOptionalUser();
+  const isOwner = user?.id === loaderData.owner.id;
+  const ownerDisplayName = loaderData.owner.name ?? loaderData.owner.username;
   const navLinkDefaultClassName =
-    'line-clamp-2 block rounded-l-full py-2 pl-8 pr-6 text-base lg:text-xl'
+    'line-clamp-2 block rounded-l-full py-2 pl-8 pr-6 text-base lg:text-xl';
   return (
     <main className="container flex min-h-[400px] flex-1 px-0 pb-12 md:px-8">
       <div className="bg-muted grid w-full grid-cols-4 pl-2 md:container md:rounded-3xl md:pr-0">
@@ -86,7 +86,7 @@ export default function NotesRoute({ loaderData }: Route.ComponentProps) {
         </div>
       </div>
     </main>
-  )
+  );
 }
 
 export function ErrorBoundary() {
@@ -98,5 +98,5 @@ export function ErrorBoundary() {
         ),
       }}
     />
-  )
+  );
 }

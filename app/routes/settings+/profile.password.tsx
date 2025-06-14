@@ -1,29 +1,29 @@
-import { getFormProps, getInputProps, useForm } from '@conform-to/react'
-import { getZodConstraint, parseWithZod } from '@conform-to/zod'
-import { type SEOHandle } from '@nasa-gcn/remix-seo'
-import { data, redirect, Form, Link } from 'react-router'
-import { z } from 'zod'
-import { ErrorList, Field } from '#app/components/forms.tsx'
-import { Button } from '#app/components/ui/button.tsx'
-import { Icon } from '#app/components/ui/icon.tsx'
-import { StatusButton } from '#app/components/ui/status-button.tsx'
+import { getFormProps, getInputProps, useForm } from '@conform-to/react';
+import { getZodConstraint, parseWithZod } from '@conform-to/zod';
+import { type SEOHandle } from '@nasa-gcn/remix-seo';
+import { data, redirect, Form, Link } from 'react-router';
+import { z } from 'zod';
+import { ErrorList, Field } from '#app/components/forms.tsx';
+import { Button } from '#app/components/ui/button.tsx';
+import { Icon } from '#app/components/ui/icon.tsx';
+import { StatusButton } from '#app/components/ui/status-button.tsx';
 import {
   checkIsCommonPassword,
   getPasswordHash,
   requireUserId,
   verifyUserPassword,
-} from '#app/utils/auth.server.ts'
-import { prisma } from '#app/utils/db.server.ts'
-import { useIsPending } from '#app/utils/misc.tsx'
-import { redirectWithToast } from '#app/utils/toast.server.ts'
-import { PasswordSchema } from '#app/utils/user-validation.ts'
-import { type Route } from './+types/profile.password.ts'
-import { type BreadcrumbHandle } from './profile.tsx'
+} from '#app/utils/auth.server.ts';
+import { prisma } from '#app/utils/db.server.ts';
+import { useIsPending } from '#app/utils/misc.tsx';
+import { redirectWithToast } from '#app/utils/toast.server.ts';
+import { PasswordSchema } from '#app/utils/user-validation.ts';
+import { type Route } from './+types/profile.password.ts';
+import { type BreadcrumbHandle } from './profile.tsx';
 
 export const handle: BreadcrumbHandle & SEOHandle = {
   breadcrumb: <Icon name="dots-horizontal">Password</Icon>,
   getSitemapEntries: () => null,
-}
+};
 
 const ChangePasswordForm = z
   .object({
@@ -37,55 +37,58 @@ const ChangePasswordForm = z
         path: ['confirmNewPassword'],
         code: z.ZodIssueCode.custom,
         message: 'The passwords must match',
-      })
+      });
     }
-  })
+  });
 
 async function requirePassword(userId: string) {
   const password = await prisma.password.findUnique({
     select: { userId: true },
     where: { userId },
-  })
+  });
   if (!password) {
-    throw redirect('/settings/profile/password/create')
+    throw redirect('/settings/profile/password/create');
   }
 }
 
 export async function loader({ request }: Route.LoaderArgs) {
-  const userId = await requireUserId(request)
-  await requirePassword(userId)
-  return {}
+  const userId = await requireUserId(request);
+  await requirePassword(userId);
+  return {};
 }
 
 export async function action({ request }: Route.ActionArgs) {
-  const userId = await requireUserId(request)
-  await requirePassword(userId)
-  const formData = await request.formData()
+  const userId = await requireUserId(request);
+  await requirePassword(userId);
+  const formData = await request.formData();
   const submission = await parseWithZod(formData, {
     async: true,
     schema: ChangePasswordForm.superRefine(
       async ({ currentPassword, newPassword }, ctx) => {
         if (currentPassword && newPassword) {
-          const user = await verifyUserPassword({ id: userId }, currentPassword)
+          const user = await verifyUserPassword(
+            { id: userId },
+            currentPassword
+          );
           if (!user) {
             ctx.addIssue({
               path: ['currentPassword'],
               code: z.ZodIssueCode.custom,
               message: 'Incorrect password.',
-            })
+            });
           }
-          const isCommonPassword = await checkIsCommonPassword(newPassword)
+          const isCommonPassword = await checkIsCommonPassword(newPassword);
           if (isCommonPassword) {
             ctx.addIssue({
               path: ['newPassword'],
               code: 'custom',
               message: 'Password is too common',
-            })
+            });
           }
         }
       }
     ),
-  })
+  });
   if (submission.status !== 'success') {
     return data(
       {
@@ -94,10 +97,10 @@ export async function action({ request }: Route.ActionArgs) {
         }),
       },
       { status: submission.status === 'error' ? 400 : 200 }
-    )
+    );
   }
 
-  const { newPassword } = submission.value
+  const { newPassword } = submission.value;
 
   await prisma.user.update({
     select: { username: true },
@@ -109,7 +112,7 @@ export async function action({ request }: Route.ActionArgs) {
         },
       },
     },
-  })
+  });
 
   return redirectWithToast(
     `/settings/profile`,
@@ -119,23 +122,23 @@ export async function action({ request }: Route.ActionArgs) {
       description: 'Your password has been changed.',
     },
     { status: 302 }
-  )
+  );
 }
 
 export default function ChangePasswordRoute({
   actionData,
 }: Route.ComponentProps) {
-  const isPending = useIsPending()
+  const isPending = useIsPending();
 
   const [form, fields] = useForm({
     id: 'password-change-form',
     constraint: getZodConstraint(ChangePasswordForm),
     lastResult: actionData?.result,
     onValidate({ formData }) {
-      return parseWithZod(formData, { schema: ChangePasswordForm })
+      return parseWithZod(formData, { schema: ChangePasswordForm });
     },
     shouldRevalidate: 'onBlur',
-  })
+  });
 
   return (
     <Form method="POST" {...getFormProps(form)} className="mx-auto max-w-md">
@@ -178,5 +181,5 @@ export default function ChangePasswordRoute({
         </StatusButton>
       </div>
     </Form>
-  )
+  );
 }

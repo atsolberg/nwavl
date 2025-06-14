@@ -1,10 +1,14 @@
-import { requireUserId } from '#app/utils/auth.server.ts'
-import { prisma } from '#app/utils/db.server.ts'
-import { getDomainUrl, getNoteImgSrc, getUserImgSrc } from '#app/utils/misc.tsx'
-import { type Route } from './+types/download-user-data.ts'
+import { requireUserId } from '#app/utils/auth.server.ts';
+import { prisma } from '#app/utils/db.server.ts';
+import {
+  getDomainUrl,
+  getNoteImgSrc,
+  getUserImgSrc,
+} from '#app/utils/misc.tsx';
+import { type Route } from './+types/download-user-data.ts';
 
 export async function loader({ request }: Route.LoaderArgs) {
-  const userId = await requireUserId(request)
+  const userId = await requireUserId(request);
   const user = await prisma.user.findUniqueOrThrow({
     where: { id: userId },
     // this is one of the *few* instances where you can use "include" because
@@ -37,9 +41,9 @@ export async function loader({ request }: Route.LoaderArgs) {
       sessions: true,
       roles: true,
     },
-  })
+  });
 
-  const domain = getDomainUrl(request)
+  const domain = getDomainUrl(request);
 
   return Response.json({
     user: {
@@ -58,5 +62,5 @@ export async function loader({ request }: Route.LoaderArgs) {
         })),
       })),
     },
-  })
+  });
 }

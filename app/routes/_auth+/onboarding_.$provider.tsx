@@ -3,37 +3,37 @@ import {
   getInputProps,
   useForm,
   type SubmissionResult,
-} from '@conform-to/react'
-import { getZodConstraint, parseWithZod } from '@conform-to/zod'
+} from '@conform-to/react';
+import { getZodConstraint, parseWithZod } from '@conform-to/zod';
 import {
   redirect,
   data,
   type Params,
   Form,
   useSearchParams,
-} from 'react-router'
-import { safeRedirect } from 'remix-utils/safe-redirect'
-import { z } from 'zod'
-import { CheckboxField, ErrorList, Field } from '#app/components/forms.tsx'
-import { Spacer } from '#app/components/spacer.tsx'
-import { StatusButton } from '#app/components/ui/status-button.tsx'
+} from 'react-router';
+import { safeRedirect } from 'remix-utils/safe-redirect';
+import { z } from 'zod';
+import { CheckboxField, ErrorList, Field } from '#app/components/forms.tsx';
+import { Spacer } from '#app/components/spacer.tsx';
+import { StatusButton } from '#app/components/ui/status-button.tsx';
 import {
   sessionKey,
   signupWithConnection,
   requireAnonymous,
-} from '#app/utils/auth.server.ts'
-import { ProviderNameSchema } from '#app/utils/connections.tsx'
-import { prisma } from '#app/utils/db.server.ts'
-import { useIsPending } from '#app/utils/misc.tsx'
-import { authSessionStorage } from '#app/utils/session.server.ts'
-import { redirectWithToast } from '#app/utils/toast.server.ts'
-import { NameSchema, UsernameSchema } from '#app/utils/user-validation.ts'
-import { verifySessionStorage } from '#app/utils/verification.server.ts'
-import { type Route } from './+types/onboarding_.$provider.ts'
-import { onboardingEmailSessionKey } from './onboarding'
+} from '#app/utils/auth.server.ts';
+import { ProviderNameSchema } from '#app/utils/connections.tsx';
+import { prisma } from '#app/utils/db.server.ts';
+import { useIsPending } from '#app/utils/misc.tsx';
+import { authSessionStorage } from '#app/utils/session.server.ts';
+import { redirectWithToast } from '#app/utils/toast.server.ts';
+import { NameSchema, UsernameSchema } from '#app/utils/user-validation.ts';
+import { verifySessionStorage } from '#app/utils/verification.server.ts';
+import { type Route } from './+types/onboarding_.$provider.ts';
+import { onboardingEmailSessionKey } from './onboarding';
 
-export const providerIdKey = 'providerId'
-export const prefilledProfileKey = 'prefilledProfile'
+export const providerIdKey = 'providerId';
+export const prefilledProfileKey = 'prefilledProfile';
 
 const SignupFormSchema = z.object({
   imageUrl: z.string().optional(),
@@ -44,43 +44,43 @@ const SignupFormSchema = z.object({
   }),
   remember: z.boolean().optional(),
   redirectTo: z.string().optional(),
-})
+});
 
 async function requireData({
   request,
   params,
 }: {
-  request: Request
-  params: Params
+  request: Request;
+  params: Params;
 }) {
-  await requireAnonymous(request)
+  await requireAnonymous(request);
   const verifySession = await verifySessionStorage.getSession(
     request.headers.get('cookie')
-  )
-  const email = verifySession.get(onboardingEmailSessionKey)
-  const providerId = verifySession.get(providerIdKey)
+  );
+  const email = verifySession.get(onboardingEmailSessionKey);
+  const providerId = verifySession.get(providerIdKey);
   const result = z
     .object({
       email: z.string(),
       providerName: ProviderNameSchema,
       providerId: z.string().or(z.number()),
     })
-    .safeParse({ email, providerName: params.provider, providerId })
+    .safeParse({ email, providerName: params.provider, providerId });
   if (result.success) {
-    return result.data
+    return result.data;
   } else {
-    console.error(result.error)
-    throw redirect('/signup')
+    console.error(result.error);
+    throw redirect('/signup');
   }
 }
 
 export async function loader({ request, params }: Route.LoaderArgs) {
-  const { email } = await requireData({ request, params })
+  const { email } = await requireData({ request, params });
 
   const verifySession = await verifySessionStorage.getSession(
     request.headers.get('cookie')
-  )
-  const prefilledProfile = verifySession.get(prefilledProfileKey)
+  );
+  const prefilledProfile = verifySession.get(prefilledProfileKey);
 
   return {
     email,
@@ -88,32 +88,32 @@ export async function loader({ request, params }: Route.LoaderArgs) {
     submission: {
       initialValue: prefilledProfile ?? {},
     } as SubmissionResult,
-  }
+  };
 }
 
 export async function action({ request, params }: Route.ActionArgs) {
   const { email, providerId, providerName } = await requireData({
     request,
     params,
-  })
-  const formData = await request.formData()
+  });
+  const formData = await request.formData();
   const verifySession = await verifySessionStorage.getSession(
     request.headers.get('cookie')
-  )
+  );
 
   const submission = await parseWithZod(formData, {
     schema: SignupFormSchema.superRefine(async (data, ctx) => {
       const existingUser = await prisma.user.findUnique({
         where: { username: data.username },
         select: { id: true },
-      })
+      });
       if (existingUser) {
         ctx.addIssue({
           path: ['username'],
           code: z.ZodIssueCode.custom,
           message: 'A user already exists with this username',
-        })
-        return
+        });
+        return;
       }
     }).transform(async data => {
       const session = await signupWithConnection({
@@ -121,65 +121,65 @@ export async function action({ request, params }: Route.ActionArgs) {
         email,
         providerId: String(providerId),
         providerName,
-      })
-      return { ...data, session }
+      });
+      return { ...data, session };
     }),
     async: true,
-  })
+  });
 
   if (submission.status !== 'success') {
     return data(
       { result: submission.reply() },
       { status: submission.status === 'error' ? 400 : 200 }
-    )
+    );
   }
 
-  const { session, remember, redirectTo } = submission.value
+  const { session, remember, redirectTo } = submission.value;
 
   const authSession = await authSessionStorage.getSession(
     request.headers.get('cookie')
-  )
-  authSession.set(sessionKey, session.id)
-  const headers = new Headers()
+  );
+  authSession.set(sessionKey, session.id);
+  const headers = new Headers();
   headers.append(
     'set-cookie',
     await authSessionStorage.commitSession(authSession, {
       expires: remember ? session.expirationDate : undefined,
     })
-  )
+  );
   headers.append(
     'set-cookie',
     await verifySessionStorage.destroySession(verifySession)
-  )
+  );
 
   return redirectWithToast(
     safeRedirect(redirectTo),
     { title: 'Welcome', description: 'Thanks for signing up!' },
     { headers }
-  )
+  );
 }
 
 export const meta: Route.MetaFunction = () => {
-  return [{ title: 'Setup Epic Notes Account' }]
-}
+  return [{ title: 'Setup Epic Notes Account' }];
+};
 
 export default function OnboardingProviderRoute({
   loaderData,
   actionData,
 }: Route.ComponentProps) {
-  const isPending = useIsPending()
-  const [searchParams] = useSearchParams()
-  const redirectTo = searchParams.get('redirectTo')
+  const isPending = useIsPending();
+  const [searchParams] = useSearchParams();
+  const redirectTo = searchParams.get('redirectTo');
 
   const [form, fields] = useForm({
     id: 'onboarding-provider-form',
     constraint: getZodConstraint(SignupFormSchema),
     lastResult: actionData?.result ?? loaderData.submission,
     onValidate({ formData }) {
-      return parseWithZod(formData, { schema: SignupFormSchema })
+      return parseWithZod(formData, { schema: SignupFormSchema });
     },
     shouldRevalidate: 'onBlur',
-  })
+  });
 
   return (
     <div className="container flex min-h-full flex-col justify-center pt-20 pb-32">
@@ -267,5 +267,5 @@ export default function OnboardingProviderRoute({
         </Form>
       </div>
     </div>
-  )
+  );
 }

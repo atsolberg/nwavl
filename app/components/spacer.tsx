@@ -37,7 +37,7 @@ export function Spacer({
     | 'xl'
     | '2xl'
     | '3xl'
-    | '4xl'
+    | '4xl';
 }) {
   const options: Record<typeof size, string> = {
     '4xs': 'h-4',
@@ -51,7 +51,7 @@ export function Spacer({
     '2xl': 'h-36',
     '3xl': 'h-40',
     '4xl': 'h-44',
-  }
-  const className = options[size]
-  return <div className={className} />
+  };
+  const className = options[size];
+  return <div className={className} />;
 }

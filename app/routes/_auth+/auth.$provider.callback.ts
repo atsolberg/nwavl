@@ -1,41 +1,44 @@
-import { redirect } from 'react-router'
+import { redirect } from 'react-router';
 import {
   authenticator,
   getSessionExpirationDate,
   getUserId,
-} from '#app/utils/auth.server.ts'
-import { ProviderNameSchema, providerLabels } from '#app/utils/connections.tsx'
-import { prisma } from '#app/utils/db.server.ts'
-import { ensurePrimary } from '#app/utils/litefs.server.ts'
-import { combineHeaders } from '#app/utils/misc.tsx'
+} from '#app/utils/auth.server.ts';
+import { ProviderNameSchema, providerLabels } from '#app/utils/connections.tsx';
+import { prisma } from '#app/utils/db.server.ts';
+import { ensurePrimary } from '#app/utils/litefs.server.ts';
+import { combineHeaders } from '#app/utils/misc.tsx';
 import {
   normalizeEmail,
   normalizeUsername,
-} from '#app/utils/providers/provider.ts'
+} from '#app/utils/providers/provider.ts';
 import {
   destroyRedirectToHeader,
   getRedirectCookieValue,
-} from '#app/utils/redirect-cookie.server.ts'
+} from '#app/utils/redirect-cookie.server.ts';
 import {
   createToastHeaders,
   redirectWithToast,
-} from '#app/utils/toast.server.ts'
-import { verifySessionStorage } from '#app/utils/verification.server.ts'
-import { type Route } from './+types/auth.$provider.callback.ts'
-import { handleNewSession } from './login.server.ts'
-import { onboardingEmailSessionKey } from './onboarding.tsx'
-import { prefilledProfileKey, providerIdKey } from './onboarding_.$provider.tsx'
+} from '#app/utils/toast.server.ts';
+import { verifySessionStorage } from '#app/utils/verification.server.ts';
+import { type Route } from './+types/auth.$provider.callback.ts';
+import { handleNewSession } from './login.server.ts';
+import { onboardingEmailSessionKey } from './onboarding.tsx';
+import {
+  prefilledProfileKey,
+  providerIdKey,
+} from './onboarding_.$provider.tsx';
 
-const destroyRedirectTo = { 'set-cookie': destroyRedirectToHeader }
+const destroyRedirectTo = { 'set-cookie': destroyRedirectToHeader };
 
 export async function loader({ request, params }: Route.LoaderArgs) {
   // this loader performs mutations, so we need to make sure we're on the
   // primary instance to avoid writing to a read-only replica
-  await ensurePrimary()
+  await ensurePrimary();
 
-  const providerName = ProviderNameSchema.parse(params.provider)
-  const redirectTo = getRedirectCookieValue(request)
-  const label = providerLabels[providerName]
+  const providerName = ProviderNameSchema.parse(params.provider);
+  const redirectTo = getRedirectCookieValue(request);
+  const label = providerLabels[providerName];
 
   const authResult = await authenticator
     .authenticate(providerName, request)
@@ -50,10 +53,10 @@ export async function loader({ request, params }: Route.LoaderArgs) {
           success: false,
           error,
         }) as const
-    )
+    );
 
   if (!authResult.success) {
-    console.error(authResult.error)
+    console.error(authResult.error);
     throw await redirectWithToast(
       '/login',
       {
@@ -62,10 +65,10 @@ export async function loader({ request, params }: Route.LoaderArgs) {
         type: 'error',
       },
       { headers: destroyRedirectTo }
-    )
+    );
   }
 
-  const { data: profile } = authResult
+  const { data: profile } = authResult;
 
   const existingConnection = await prisma.connection.findUnique({
     select: { userId: true },
@@ -75,9 +78,9 @@ export async function loader({ request, params }: Route.LoaderArgs) {
         providerId: String(profile.id),
       },
     },
-  })
+  });
 
-  const userId = await getUserId(request)
+  const userId = await getUserId(request);
 
   if (existingConnection && userId) {
     if (existingConnection.userId === userId) {
@@ -88,7 +91,7 @@ export async function loader({ request, params }: Route.LoaderArgs) {
           description: `Your "${profile.username}" ${label} account is already connected.`,
         },
         { headers: destroyRedirectTo }
-      )
+      );
     } else {
       return redirectWithToast(
         '/settings/profile/connections',
@@ -97,7 +100,7 @@ export async function loader({ request, params }: Route.LoaderArgs) {
           description: `The "${profile.username}" ${label} account is already connected to another account.`,
         },
         { headers: destroyRedirectTo }
-      )
+      );
     }
   }
 
@@ -109,7 +112,7 @@ export async function loader({ request, params }: Route.LoaderArgs) {
         providerId: String(profile.id),
         userId,
       },
-    })
+    });
     return redirectWithToast(
       '/settings/profile/connections',
       {
@@ -118,12 +121,12 @@ export async function loader({ request, params }: Route.LoaderArgs) {
         description: `Your "${profile.username}" ${label} account has been connected.`,
       },
       { headers: destroyRedirectTo }
-    )
+    );
   }
 
   // Connection exists already? Make a new session
   if (existingConnection) {
-    return makeSession({ request, userId: existingConnection.userId })
+    return makeSession({ request, userId: existingConnection.userId });
   }
 
   // if the email matches a user in the db, then link the account and
@@ -131,7 +134,7 @@ export async function loader({ request, params }: Route.LoaderArgs) {
   const user = await prisma.user.findUnique({
     select: { id: true },
     where: { email: profile.email.toLowerCase() },
-  })
+  });
   if (user) {
     await prisma.connection.create({
       data: {
@@ -139,7 +142,7 @@ export async function loader({ request, params }: Route.LoaderArgs) {
         providerId: String(profile.id),
         userId: user.id,
       },
-    })
+    });
     return makeSession(
       { request, userId: user.id },
       {
@@ -148,12 +151,12 @@ export async function loader({ request, params }: Route.LoaderArgs) {
           description: `Your "${profile.username}" ${label} account has been connected.`,
         }),
       }
-    )
+    );
   }
 
   // this is a new user, so let's get them onboarded
-  const verifySession = await verifySessionStorage.getSession()
-  verifySession.set(onboardingEmailSessionKey, profile.email)
+  const verifySession = await verifySessionStorage.getSession();
+  verifySession.set(onboardingEmailSessionKey, profile.email);
   verifySession.set(prefilledProfileKey, {
     ...profile,
     email: normalizeEmail(profile.email),
@@ -161,20 +164,20 @@ export async function loader({ request, params }: Route.LoaderArgs) {
       typeof profile.username === 'string'
         ? normalizeUsername(profile.username)
         : undefined,
-  })
-  verifySession.set(providerIdKey, profile.id)
+  });
+  verifySession.set(providerIdKey, profile.id);
   const onboardingRedirect = [
     `/onboarding/${providerName}`,
     redirectTo ? new URLSearchParams({ redirectTo }) : null,
   ]
     .filter(Boolean)
-    .join('?')
+    .join('?');
   return redirect(onboardingRedirect, {
     headers: combineHeaders(
       { 'set-cookie': await verifySessionStorage.commitSession(verifySession) },
       destroyRedirectTo
     ),
-  })
+  });
 }
 
 async function makeSession(
@@ -185,16 +188,16 @@ async function makeSession(
   }: { request: Request; userId: string; redirectTo?: string | null },
   responseInit?: ResponseInit
 ) {
-  redirectTo ??= '/'
+  redirectTo ??= '/';
   const session = await prisma.session.create({
     select: { id: true, expirationDate: true, userId: true },
     data: {
       expirationDate: getSessionExpirationDate(),
       userId,
     },
-  })
+  });
   return handleNewSession(
     { request, session, redirectTo, remember: true },
     { headers: combineHeaders(responseInit?.headers, destroyRedirectTo) }
-  )
+  );
 }

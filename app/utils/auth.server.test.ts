@@ -1,12 +1,12 @@
-import { http, HttpResponse } from 'msw'
-import { describe, expect, test } from 'vitest'
-import { server } from '#tests/mocks'
-import { consoleWarn } from '#tests/setup/setup-test-env.ts'
-import { checkIsCommonPassword, getPasswordHashParts } from './auth.server.ts'
+import { http, HttpResponse } from 'msw';
+import { describe, expect, test } from 'vitest';
+import { server } from '#tests/mocks';
+import { consoleWarn } from '#tests/setup/setup-test-env.ts';
+import { checkIsCommonPassword, getPasswordHashParts } from './auth.server.ts';
 
 test('checkIsCommonPassword returns true when password is found in breach database', async () => {
-  const password = 'testpassword'
-  const [prefix, suffix] = getPasswordHashParts(password)
+  const password = 'testpassword';
+  const [prefix, suffix] = getPasswordHashParts(password);
 
   server.use(
     http.get(`https://api.pwnedpasswords.com/range/${prefix}`, () => {
@@ -14,17 +14,17 @@ test('checkIsCommonPassword returns true when password is found in breach databa
       return new HttpResponse(
         `1234567890123456789012345678901234A:1\n${suffix}:1234`,
         { status: 200 }
-      )
+      );
     })
-  )
+  );
 
-  const result = await checkIsCommonPassword(password)
-  expect(result).toBe(true)
-})
+  const result = await checkIsCommonPassword(password);
+  expect(result).toBe(true);
+});
 
 test('checkIsCommonPassword returns false when password is not found in breach database', async () => {
-  const password = 'sup3r-dup3r-s3cret'
-  const [prefix] = getPasswordHashParts(password)
+  const password = 'sup3r-dup3r-s3cret';
+  const [prefix] = getPasswordHashParts(password);
 
   server.use(
     http.get(`https://api.pwnedpasswords.com/range/${prefix}`, () => {
@@ -33,52 +33,52 @@ test('checkIsCommonPassword returns false when password is not found in breach d
         '1234567890123456789012345678901234A:1\n' +
           '1234567890123456789012345678901234B:2',
         { status: 200 }
-      )
+      );
     })
-  )
+  );
 
-  const result = await checkIsCommonPassword(password)
-  expect(result).toBe(false)
-})
+  const result = await checkIsCommonPassword(password);
+  expect(result).toBe(false);
+});
 
 // Error cases
 test('checkIsCommonPassword returns false when API returns 500', async () => {
-  const password = 'testpassword'
-  const [prefix] = getPasswordHashParts(password)
+  const password = 'testpassword';
+  const [prefix] = getPasswordHashParts(password);
 
   server.use(
     http.get(`https://api.pwnedpasswords.com/range/${prefix}`, () => {
-      return new HttpResponse(null, { status: 500 })
+      return new HttpResponse(null, { status: 500 });
     })
-  )
+  );
 
-  const result = await checkIsCommonPassword(password)
-  expect(result).toBe(false)
-})
+  const result = await checkIsCommonPassword(password);
+  expect(result).toBe(false);
+});
 
 test('checkIsCommonPassword returns false when response has invalid format', async () => {
-  consoleWarn.mockImplementation(() => {})
-  const password = 'testpassword'
-  const [prefix] = getPasswordHashParts(password)
+  consoleWarn.mockImplementation(() => {});
+  const password = 'testpassword';
+  const [prefix] = getPasswordHashParts(password);
 
   server.use(
     http.get(`https://api.pwnedpasswords.com/range/${prefix}`, () => {
       // Create a response that will cause a TypeError when text() is called
-      const response = new Response()
+      const response = new Response();
       Object.defineProperty(response, 'text', {
         value: () => Promise.resolve(null),
-      })
-      return response
+      });
+      return response;
     })
-  )
+  );
 
-  const result = await checkIsCommonPassword(password)
-  expect(result).toBe(false)
+  const result = await checkIsCommonPassword(password);
+  expect(result).toBe(false);
   expect(consoleWarn).toHaveBeenCalledWith(
     'Unknown error during password check',
     expect.any(TypeError)
-  )
-})
+  );
+});
 
 describe('timeout handling', () => {
   // normally we'd use fake timers for a test like this, but there's an issue
@@ -87,23 +87,23 @@ describe('timeout handling', () => {
   // afterEach(() => vi.useRealTimers())
 
   test('checkIsCommonPassword times out after 1 second', async () => {
-    consoleWarn.mockImplementation(() => {})
+    consoleWarn.mockImplementation(() => {});
     server.use(
       http.get('https://api.pwnedpasswords.com/range/:prefix', async () => {
-        const twoSecondDelay = 2000
-        await new Promise(resolve => setTimeout(resolve, twoSecondDelay))
+        const twoSecondDelay = 2000;
+        await new Promise(resolve => setTimeout(resolve, twoSecondDelay));
         // swap to this when we can use fake timers:
         // await vi.advanceTimersByTimeAsync(twoSecondDelay)
         return new HttpResponse(
           '1234567890123456789012345678901234A:1\n' +
             '1234567890123456789012345678901234B:2',
           { status: 200 }
-        )
+        );
       })
-    )
+    );
 
-    const result = await checkIsCommonPassword('testpassword')
-    expect(result).toBe(false)
-    expect(consoleWarn).toHaveBeenCalledWith('Password check timed out')
-  })
-})
+    const result = await checkIsCommonPassword('testpassword');
+    expect(result).toBe(false);
+    expect(consoleWarn).toHaveBeenCalledWith('Password check timed out');
+  });
+});

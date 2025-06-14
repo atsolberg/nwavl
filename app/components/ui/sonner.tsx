@@ -1,6 +1,6 @@
-import { Toaster as Sonner } from 'sonner'
+import { Toaster as Sonner } from 'sonner';
 
-type ToasterProps = React.ComponentProps<typeof Sonner>
+type ToasterProps = React.ComponentProps<typeof Sonner>;
 
 const EpicToaster = ({ theme, ...props }: ToasterProps) => {
   return (
@@ -20,7 +20,7 @@ const EpicToaster = ({ theme, ...props }: ToasterProps) => {
       }}
       {...props}
     />
-  )
-}
+  );
+};
 
-export { EpicToaster }
+export { EpicToaster };

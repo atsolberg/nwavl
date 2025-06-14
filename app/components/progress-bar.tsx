@@ -1,31 +1,31 @@
-import { useEffect, useRef, useState } from 'react'
-import { useNavigation } from 'react-router'
-import { useSpinDelay } from 'spin-delay'
-import { cn } from '#app/utils/misc.tsx'
-import { Icon } from './ui/icon.tsx'
+import { useEffect, useRef, useState } from 'react';
+import { useNavigation } from 'react-router';
+import { useSpinDelay } from 'spin-delay';
+import { cn } from '#app/utils/misc.tsx';
+import { Icon } from './ui/icon.tsx';
 
 function EpicProgress() {
-  const transition = useNavigation()
-  const busy = transition.state !== 'idle'
+  const transition = useNavigation();
+  const busy = transition.state !== 'idle';
   const delayedPending = useSpinDelay(busy, {
     delay: 600,
     minDuration: 400,
-  })
-  const ref = useRef<HTMLDivElement>(null)
-  const [animationComplete, setAnimationComplete] = useState(true)
+  });
+  const ref = useRef<HTMLDivElement>(null);
+  const [animationComplete, setAnimationComplete] = useState(true);
 
   useEffect(() => {
-    if (!ref.current) return
-    if (delayedPending) setAnimationComplete(false)
+    if (!ref.current) return;
+    if (delayedPending) setAnimationComplete(false);
 
     const animationPromises = ref.current
       .getAnimations()
-      .map(({ finished }) => finished)
+      .map(({ finished }) => finished);
 
     void Promise.allSettled(animationPromises).then(() => {
-      if (!delayedPending) setAnimationComplete(true)
-    })
-  }, [delayedPending])
+      if (!delayedPending) setAnimationComplete(true);
+    });
+  }, [delayedPending]);
 
   return (
     <div
@@ -57,7 +57,7 @@ function EpicProgress() {
         </div>
       )}
     </div>
-  )
+  );
 }
 
-export { EpicProgress }
+export { EpicProgress };

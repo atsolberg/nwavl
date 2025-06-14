@@ -1,50 +1,50 @@
-import { getFormProps, getInputProps, useForm } from '@conform-to/react'
-import { getZodConstraint, parseWithZod } from '@conform-to/zod'
-import { type SEOHandle } from '@nasa-gcn/remix-seo'
-import { Form, useSearchParams } from 'react-router'
-import { HoneypotInputs } from 'remix-utils/honeypot/react'
-import { z } from 'zod'
-import { GeneralErrorBoundary } from '#app/components/error-boundary.tsx'
-import { ErrorList, OTPField } from '#app/components/forms.tsx'
-import { Spacer } from '#app/components/spacer.tsx'
-import { StatusButton } from '#app/components/ui/status-button.tsx'
-import { checkHoneypot } from '#app/utils/honeypot.server.ts'
-import { useIsPending } from '#app/utils/misc.tsx'
-import { type Route } from './+types/verify.ts'
-import { validateRequest } from './verify.server.ts'
+import { getFormProps, getInputProps, useForm } from '@conform-to/react';
+import { getZodConstraint, parseWithZod } from '@conform-to/zod';
+import { type SEOHandle } from '@nasa-gcn/remix-seo';
+import { Form, useSearchParams } from 'react-router';
+import { HoneypotInputs } from 'remix-utils/honeypot/react';
+import { z } from 'zod';
+import { GeneralErrorBoundary } from '#app/components/error-boundary.tsx';
+import { ErrorList, OTPField } from '#app/components/forms.tsx';
+import { Spacer } from '#app/components/spacer.tsx';
+import { StatusButton } from '#app/components/ui/status-button.tsx';
+import { checkHoneypot } from '#app/utils/honeypot.server.ts';
+import { useIsPending } from '#app/utils/misc.tsx';
+import { type Route } from './+types/verify.ts';
+import { validateRequest } from './verify.server.ts';
 
 export const handle: SEOHandle = {
   getSitemapEntries: () => null,
-}
+};
 
-export const codeQueryParam = 'code'
-export const targetQueryParam = 'target'
-export const typeQueryParam = 'type'
-export const redirectToQueryParam = 'redirectTo'
-const types = ['onboarding', 'reset-password', 'change-email', '2fa'] as const
-const VerificationTypeSchema = z.enum(types)
-export type VerificationTypes = z.infer<typeof VerificationTypeSchema>
+export const codeQueryParam = 'code';
+export const targetQueryParam = 'target';
+export const typeQueryParam = 'type';
+export const redirectToQueryParam = 'redirectTo';
+const types = ['onboarding', 'reset-password', 'change-email', '2fa'] as const;
+const VerificationTypeSchema = z.enum(types);
+export type VerificationTypes = z.infer<typeof VerificationTypeSchema>;
 
 export const VerifySchema = z.object({
   [codeQueryParam]: z.string().min(6).max(6),
   [typeQueryParam]: VerificationTypeSchema,
   [targetQueryParam]: z.string(),
   [redirectToQueryParam]: z.string().optional(),
-})
+});
 
 export async function action({ request }: Route.ActionArgs) {
-  const formData = await request.formData()
-  await checkHoneypot(formData)
-  return validateRequest(request, formData)
+  const formData = await request.formData();
+  await checkHoneypot(formData);
+  return validateRequest(request, formData);
 }
 
 export default function VerifyRoute({ actionData }: Route.ComponentProps) {
-  const [searchParams] = useSearchParams()
-  const isPending = useIsPending()
+  const [searchParams] = useSearchParams();
+  const isPending = useIsPending();
   const parseWithZoddType = VerificationTypeSchema.safeParse(
     searchParams.get(typeQueryParam)
-  )
-  const type = parseWithZoddType.success ? parseWithZoddType.data : null
+  );
+  const type = parseWithZoddType.success ? parseWithZoddType.data : null;
 
   const checkEmail = (
     <>
@@ -53,7 +53,7 @@ export default function VerifyRoute({ actionData }: Route.ComponentProps) {
         We've sent you a code to verify your email address.
       </p>
     </>
-  )
+  );
 
   const headings: Record<VerificationTypes, React.ReactNode> = {
     onboarding: checkEmail,
@@ -67,14 +67,14 @@ export default function VerifyRoute({ actionData }: Route.ComponentProps) {
         </p>
       </>
     ),
-  }
+  };
 
   const [form, fields] = useForm({
     id: 'verify-form',
     constraint: getZodConstraint(VerifySchema),
     lastResult: actionData?.result,
     onValidate({ formData }) {
-      return parseWithZod(formData, { schema: VerifySchema })
+      return parseWithZod(formData, { schema: VerifySchema });
     },
     defaultValue: {
       code: searchParams.get(codeQueryParam),
@@ -82,7 +82,7 @@ export default function VerifyRoute({ actionData }: Route.ComponentProps) {
       target: searchParams.get(targetQueryParam),
       redirectTo: searchParams.get(redirectToQueryParam),
     },
-  })
+  });
 
   return (
     <main className="container flex flex-col justify-center pt-20 pb-32">
@@ -136,9 +136,9 @@ export default function VerifyRoute({ actionData }: Route.ComponentProps) {
         </div>
       </div>
     </main>
-  )
+  );
 }
 
 export function ErrorBoundary() {
-  return <GeneralErrorBoundary />
+  return <GeneralErrorBoundary />;
 }

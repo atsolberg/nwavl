@@ -1,20 +1,20 @@
-import { startRegistration } from '@simplewebauthn/browser'
-import { formatDistanceToNow } from 'date-fns'
-import { useState } from 'react'
-import { Form, useRevalidator } from 'react-router'
-import { z } from 'zod'
-import { Button } from '#app/components/ui/button.tsx'
-import { Icon } from '#app/components/ui/icon.tsx'
-import { requireUserId } from '#app/utils/auth.server.ts'
-import { prisma } from '#app/utils/db.server.ts'
-import { type Route } from './+types/profile.passkeys.ts'
+import { startRegistration } from '@simplewebauthn/browser';
+import { formatDistanceToNow } from 'date-fns';
+import { useState } from 'react';
+import { Form, useRevalidator } from 'react-router';
+import { z } from 'zod';
+import { Button } from '#app/components/ui/button.tsx';
+import { Icon } from '#app/components/ui/icon.tsx';
+import { requireUserId } from '#app/utils/auth.server.ts';
+import { prisma } from '#app/utils/db.server.ts';
+import { type Route } from './+types/profile.passkeys.ts';
 
 export const handle = {
   breadcrumb: <Icon name="passkey">Passkeys</Icon>,
-}
+};
 
 export async function loader({ request }: Route.LoaderArgs) {
-  const userId = await requireUserId(request)
+  const userId = await requireUserId(request);
   const passkeys = await prisma.passkey.findMany({
     where: { userId },
     orderBy: { createdAt: 'desc' },
@@ -23,22 +23,22 @@ export async function loader({ request }: Route.LoaderArgs) {
       deviceType: true,
       createdAt: true,
     },
-  })
-  return { passkeys }
+  });
+  return { passkeys };
 }
 
 export async function action({ request }: Route.ActionArgs) {
-  const userId = await requireUserId(request)
-  const formData = await request.formData()
-  const intent = formData.get('intent')
+  const userId = await requireUserId(request);
+  const formData = await request.formData();
+  const intent = formData.get('intent');
 
   if (intent === 'delete') {
-    const passkeyId = formData.get('passkeyId')
+    const passkeyId = formData.get('passkeyId');
     if (typeof passkeyId !== 'string') {
       return Response.json(
         { status: 'error', error: 'Invalid passkey ID' },
         { status: 400 }
-      )
+      );
     }
 
     await prisma.passkey.delete({
@@ -46,14 +46,14 @@ export async function action({ request }: Route.ActionArgs) {
         id: passkeyId,
         userId, // Ensure the passkey belongs to the user
       },
-    })
-    return Response.json({ status: 'success' })
+    });
+    return Response.json({ status: 'success' });
   }
 
   return Response.json(
     { status: 'error', error: 'Invalid intent' },
     { status: 400 }
-  )
+  );
 }
 
 const RegistrationOptionsSchema = z.object({
@@ -89,37 +89,37 @@ const RegistrationOptionsSchema = z.object({
       })
       .optional(),
   }),
-}) satisfies z.ZodType<{ options: PublicKeyCredentialCreationOptionsJSON }>
+}) satisfies z.ZodType<{ options: PublicKeyCredentialCreationOptionsJSON }>;
 
 export default function Passkeys({ loaderData }: Route.ComponentProps) {
-  const revalidator = useRevalidator()
-  const [error, setError] = useState<string | null>(null)
+  const revalidator = useRevalidator();
+  const [error, setError] = useState<string | null>(null);
 
   async function handlePasskeyRegistration() {
     try {
-      setError(null)
-      const resp = await fetch('/webauthn/registration')
-      const jsonResult = await resp.json()
-      const parsedResult = RegistrationOptionsSchema.parse(jsonResult)
+      setError(null);
+      const resp = await fetch('/webauthn/registration');
+      const jsonResult = await resp.json();
+      const parsedResult = RegistrationOptionsSchema.parse(jsonResult);
 
       const regResult = await startRegistration({
         optionsJSON: parsedResult.options,
-      })
+      });
 
       const verificationResp = await fetch('/webauthn/registration', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(regResult),
-      })
+      });
 
       if (!verificationResp.ok) {
-        throw new Error('Failed to verify registration')
+        throw new Error('Failed to verify registration');
       }
 
-      void revalidator.revalidate()
+      void revalidator.revalidate();
     } catch (err) {
-      console.error('Failed to create passkey:', err)
-      setError('Failed to create passkey. Please try again.')
+      console.error('Failed to create passkey:', err);
+      setError('Failed to create passkey. Please try again.');
     }
   }
 
@@ -187,5 +187,5 @@ export default function Passkeys({ loaderData }: Route.ComponentProps) {
         </div>
       )}
     </div>
-  )
+  );
 }

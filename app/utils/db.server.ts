@@ -1,14 +1,14 @@
-import { styleText } from 'node:util'
-import { remember } from '@epic-web/remember'
+import { styleText } from 'node:util';
+import { remember } from '@epic-web/remember';
 // Changed import due to issue: https://github.com/remix-run/react-router/pull/12644
-import { PrismaClient } from '@prisma/client/index.js'
+import { PrismaClient } from '@prisma/client/index.js';
 
 export const prisma = remember('prisma', () => {
   // NOTE: if you change anything in this function you'll need to restart
   // the dev server to see your changes.
 
   // Feel free to change this log threshold to something that makes sense for you
-  const logThreshold = 20
+  const logThreshold = 20;
 
   const client = new PrismaClient({
     log: [
@@ -16,9 +16,9 @@ export const prisma = remember('prisma', () => {
       { level: 'error', emit: 'stdout' },
       { level: 'warn', emit: 'stdout' },
     ],
-  })
+  });
   client.$on('query', async e => {
-    if (e.duration < logThreshold) return
+    if (e.duration < logThreshold) return;
     const color =
       e.duration < logThreshold * 1.1
         ? 'green'
@@ -28,10 +28,10 @@ export const prisma = remember('prisma', () => {
             ? 'yellow'
             : e.duration < logThreshold * 1.4
               ? 'redBright'
-              : 'red'
-    const dur = styleText(color, `${e.duration}ms`)
-    console.info(`prisma:query - ${dur} - ${e.query}`)
-  })
-  void client.$connect()
-  return client
-})
+              : 'red';
+    const dur = styleText(color, `${e.duration}ms`);
+    console.info(`prisma:query - ${dur} - ${e.query}`);
+  });
+  void client.$connect();
+  return client;
+});

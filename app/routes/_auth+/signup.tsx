@@ -1,83 +1,83 @@
-import { getFormProps, getInputProps, useForm } from '@conform-to/react'
-import { getZodConstraint, parseWithZod } from '@conform-to/zod'
-import { type SEOHandle } from '@nasa-gcn/remix-seo'
-import * as E from '@react-email/components'
-import { data, redirect, Form, useSearchParams } from 'react-router'
-import { HoneypotInputs } from 'remix-utils/honeypot/react'
-import { z } from 'zod'
-import { GeneralErrorBoundary } from '#app/components/error-boundary.tsx'
-import { ErrorList, Field } from '#app/components/forms.tsx'
-import { StatusButton } from '#app/components/ui/status-button.tsx'
-import { requireAnonymous } from '#app/utils/auth.server.ts'
+import { getFormProps, getInputProps, useForm } from '@conform-to/react';
+import { getZodConstraint, parseWithZod } from '@conform-to/zod';
+import { type SEOHandle } from '@nasa-gcn/remix-seo';
+import * as E from '@react-email/components';
+import { data, redirect, Form, useSearchParams } from 'react-router';
+import { HoneypotInputs } from 'remix-utils/honeypot/react';
+import { z } from 'zod';
+import { GeneralErrorBoundary } from '#app/components/error-boundary.tsx';
+import { ErrorList, Field } from '#app/components/forms.tsx';
+import { StatusButton } from '#app/components/ui/status-button.tsx';
+import { requireAnonymous } from '#app/utils/auth.server.ts';
 import {
   ProviderConnectionForm,
   providerNames,
-} from '#app/utils/connections.tsx'
-import { prisma } from '#app/utils/db.server.ts'
-import { sendEmail } from '#app/utils/email.server.ts'
-import { checkHoneypot } from '#app/utils/honeypot.server.ts'
-import { useIsPending } from '#app/utils/misc.tsx'
-import { EmailSchema } from '#app/utils/user-validation.ts'
-import { type Route } from './+types/signup.ts'
-import { prepareVerification } from './verify.server.ts'
+} from '#app/utils/connections.tsx';
+import { prisma } from '#app/utils/db.server.ts';
+import { sendEmail } from '#app/utils/email.server.ts';
+import { checkHoneypot } from '#app/utils/honeypot.server.ts';
+import { useIsPending } from '#app/utils/misc.tsx';
+import { EmailSchema } from '#app/utils/user-validation.ts';
+import { type Route } from './+types/signup.ts';
+import { prepareVerification } from './verify.server.ts';
 
 export const handle: SEOHandle = {
   getSitemapEntries: () => null,
-}
+};
 
 const SignupSchema = z.object({
   email: EmailSchema,
-})
+});
 
 export async function loader({ request }: Route.LoaderArgs) {
-  await requireAnonymous(request)
-  return null
+  await requireAnonymous(request);
+  return null;
 }
 
 export async function action({ request }: Route.ActionArgs) {
-  const formData = await request.formData()
+  const formData = await request.formData();
 
-  await checkHoneypot(formData)
+  await checkHoneypot(formData);
 
   const submission = await parseWithZod(formData, {
     schema: SignupSchema.superRefine(async (data, ctx) => {
       const existingUser = await prisma.user.findUnique({
         where: { email: data.email },
         select: { id: true },
-      })
+      });
       if (existingUser) {
         ctx.addIssue({
           path: ['email'],
           code: z.ZodIssueCode.custom,
           message: 'A user already exists with this email',
-        })
-        return
+        });
+        return;
       }
     }),
     async: true,
-  })
+  });
   if (submission.status !== 'success') {
     return data(
       { result: submission.reply() },
       { status: submission.status === 'error' ? 400 : 200 }
-    )
+    );
   }
-  const { email } = submission.value
+  const { email } = submission.value;
   const { verifyUrl, redirectTo, otp } = await prepareVerification({
     period: 10 * 60,
     request,
     type: 'onboarding',
     target: email,
-  })
+  });
 
   const response = await sendEmail({
     to: email,
     subject: `Welcome to Epic Notes!`,
     react: <SignupEmail onboardingUrl={verifyUrl.toString()} otp={otp} />,
-  })
+  });
 
   if (response.status === 'success') {
-    return redirect(redirectTo.toString())
+    return redirect(redirectTo.toString());
   } else {
     return data(
       {
@@ -86,7 +86,7 @@ export async function action({ request }: Route.ActionArgs) {
       {
         status: 500,
       }
-    )
+    );
   }
 }
 
@@ -94,8 +94,8 @@ export function SignupEmail({
   onboardingUrl,
   otp,
 }: {
-  onboardingUrl: string
-  otp: string
+  onboardingUrl: string;
+  otp: string;
 }) {
   return (
     <E.Html lang="en" dir="ltr">
@@ -114,28 +114,28 @@ export function SignupEmail({
         <E.Link href={onboardingUrl}>{onboardingUrl}</E.Link>
       </E.Container>
     </E.Html>
-  )
+  );
 }
 
 export const meta: Route.MetaFunction = () => {
-  return [{ title: 'Sign Up | Epic Notes' }]
-}
+  return [{ title: 'Sign Up | Epic Notes' }];
+};
 
 export default function SignupRoute({ actionData }: Route.ComponentProps) {
-  const isPending = useIsPending()
-  const [searchParams] = useSearchParams()
-  const redirectTo = searchParams.get('redirectTo')
+  const isPending = useIsPending();
+  const [searchParams] = useSearchParams();
+  const redirectTo = searchParams.get('redirectTo');
 
   const [form, fields] = useForm({
     id: 'signup-form',
     constraint: getZodConstraint(SignupSchema),
     lastResult: actionData?.result,
     onValidate({ formData }) {
-      const result = parseWithZod(formData, { schema: SignupSchema })
-      return result
+      const result = parseWithZod(formData, { schema: SignupSchema });
+      return result;
     },
     shouldRevalidate: 'onBlur',
-  })
+  });
 
   return (
     <div className="container flex flex-col justify-center pt-20 pb-32">
@@ -186,9 +186,9 @@ export default function SignupRoute({ actionData }: Route.ComponentProps) {
         </ul>
       </div>
     </div>
-  )
+  );
 }
 
 export function ErrorBoundary() {
-  return <GeneralErrorBoundary />
+  return <GeneralErrorBoundary />;
 }

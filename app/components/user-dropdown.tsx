@@ -1,21 +1,21 @@
-import { Img } from 'openimg/react'
-import { useRef } from 'react'
-import { Link, Form } from 'react-router'
-import { getUserImgSrc } from '#app/utils/misc.tsx'
-import { useUser } from '#app/utils/user.ts'
-import { Button } from './ui/button'
+import { Img } from 'openimg/react';
+import { useRef } from 'react';
+import { Link, Form } from 'react-router';
+import { getUserImgSrc } from '#app/utils/misc.tsx';
+import { useUser } from '#app/utils/user.ts';
+import { Button } from './ui/button';
 import {
   DropdownMenu,
   DropdownMenuTrigger,
   DropdownMenuPortal,
   DropdownMenuContent,
   DropdownMenuItem,
-} from './ui/dropdown-menu'
-import { Icon } from './ui/icon'
+} from './ui/dropdown-menu';
+import { Icon } from './ui/icon';
 
 export function UserDropdown() {
-  const user = useUser()
-  const formRef = useRef<HTMLFormElement>(null)
+  const user = useUser();
+  const formRef = useRef<HTMLFormElement>(null);
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -67,5 +67,5 @@ export function UserDropdown() {
         </DropdownMenuContent>
       </DropdownMenuPortal>
     </DropdownMenu>
-  )
+  );
 }

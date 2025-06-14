@@ -1,14 +1,14 @@
-import path from 'node:path'
-import { fileURLToPath } from 'node:url'
-import { faker } from '@faker-js/faker'
-import fsExtra from 'fs-extra'
-import { HttpResponse, passthrough, http, type HttpHandler } from 'msw'
-import { USERNAME_MAX_LENGTH } from '#app/utils/user-validation.ts'
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { faker } from '@faker-js/faker';
+import fsExtra from 'fs-extra';
+import { HttpResponse, passthrough, http, type HttpHandler } from 'msw';
+import { USERNAME_MAX_LENGTH } from '#app/utils/user-validation.ts';
 
-const { json } = HttpResponse
+const { json } = HttpResponse;
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url))
-const here = (...s: Array<string>) => path.join(__dirname, ...s)
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const here = (...s: Array<string>) => path.join(__dirname, ...s);
 
 const githubUserFixturePath = path.join(
   here(
@@ -17,9 +17,9 @@ const githubUserFixturePath = path.join(
     'github',
     `users.${process.env.VITEST_POOL_ID || 0}.local.json`
   )
-)
+);
 
-await fsExtra.ensureDir(path.dirname(githubUserFixturePath))
+await fsExtra.ensureDir(path.dirname(githubUserFixturePath));
 
 function createGitHubUser(code?: string | null) {
   const createEmail = () => ({
@@ -27,12 +27,12 @@ function createGitHubUser(code?: string | null) {
     verified: faker.datatype.boolean(),
     primary: false, // <-- can only have one of these
     visibility: faker.helpers.arrayElement(['public', null]),
-  })
+  });
   const primaryEmail = {
     ...createEmail(),
     verified: true,
     primary: true,
-  }
+  };
 
   const emails = [
     {
@@ -48,9 +48,9 @@ function createGitHubUser(code?: string | null) {
       visibility: null,
     },
     primaryEmail,
-  ]
+  ];
 
-  code ??= faker.string.uuid()
+  code ??= faker.string.uuid();
   return {
     code,
     accessToken: `${code}_mock_access_token`,
@@ -63,85 +63,87 @@ function createGitHubUser(code?: string | null) {
     },
     emails,
     primaryEmail: primaryEmail.email,
-  }
+  };
 }
 
-export type GitHubUser = ReturnType<typeof createGitHubUser>
+export type GitHubUser = ReturnType<typeof createGitHubUser>;
 
 async function getGitHubUsers() {
   try {
     if (await fsExtra.pathExists(githubUserFixturePath)) {
-      const json = await fsExtra.readJson(githubUserFixturePath)
-      return json as Array<GitHubUser>
+      const json = await fsExtra.readJson(githubUserFixturePath);
+      return json as Array<GitHubUser>;
     }
-    return []
+    return [];
   } catch (error) {
-    console.error(error)
-    return []
+    console.error(error);
+    return [];
   }
 }
 
 export async function deleteGitHubUser(primaryEmail: string) {
-  const users = await getGitHubUsers()
-  const user = users.find(u => u.primaryEmail === primaryEmail)
-  if (!user) return null
-  await setGitHubUsers(users.filter(u => u.primaryEmail !== primaryEmail))
-  return user
+  const users = await getGitHubUsers();
+  const user = users.find(u => u.primaryEmail === primaryEmail);
+  if (!user) return null;
+  await setGitHubUsers(users.filter(u => u.primaryEmail !== primaryEmail));
+  return user;
 }
 
 export async function deleteGitHubUsers() {
-  await fsExtra.remove(githubUserFixturePath)
+  await fsExtra.remove(githubUserFixturePath);
 }
 
 async function setGitHubUsers(users: Array<GitHubUser>) {
-  await fsExtra.writeJson(githubUserFixturePath, users, { spaces: 2 })
+  await fsExtra.writeJson(githubUserFixturePath, users, { spaces: 2 });
 }
 
 export async function insertGitHubUser(code?: string | null) {
-  const githubUsers = await getGitHubUsers()
-  let user = githubUsers.find(u => u.code === code)
+  const githubUsers = await getGitHubUsers();
+  let user = githubUsers.find(u => u.code === code);
   if (user) {
-    Object.assign(user, createGitHubUser(code))
+    Object.assign(user, createGitHubUser(code));
   } else {
-    user = createGitHubUser(code)
-    githubUsers.push(user)
+    user = createGitHubUser(code);
+    githubUsers.push(user);
   }
-  await setGitHubUsers(githubUsers)
-  return user
+  await setGitHubUsers(githubUsers);
+  return user;
 }
 
 async function getUser(request: Request) {
   const accessToken = request.headers
     .get('authorization')
-    ?.slice('Bearer '.length)
+    ?.slice('Bearer '.length);
 
   if (!accessToken) {
-    return new Response('Unauthorized', { status: 401 })
+    return new Response('Unauthorized', { status: 401 });
   }
-  const user = (await getGitHubUsers()).find(u => u.accessToken === accessToken)
+  const user = (await getGitHubUsers()).find(
+    u => u.accessToken === accessToken
+  );
 
   if (!user) {
-    return new Response('Not Found', { status: 404 })
+    return new Response('Not Found', { status: 404 });
   }
-  return user
+  return user;
 }
 
 const passthroughGitHub =
   !process.env.GITHUB_CLIENT_ID?.startsWith('MOCK_') &&
-  process.env.NODE_ENV !== 'test'
+  process.env.NODE_ENV !== 'test';
 
 export const handlers: Array<HttpHandler> = [
   http.post(
     'https://github.com/login/oauth/access_token',
     async ({ request }) => {
-      if (passthroughGitHub) return passthrough()
-      const params = new URLSearchParams(await request.text())
+      if (passthroughGitHub) return passthrough();
+      const params = new URLSearchParams(await request.text());
 
-      const code = params.get('code')
-      const githubUsers = await getGitHubUsers()
-      let user = githubUsers.find(u => u.code === code)
+      const code = params.get('code');
+      const githubUsers = await getGitHubUsers();
+      let user = githubUsers.find(u => u.code === code);
       if (!user) {
-        user = await insertGitHubUser(code)
+        user = await insertGitHubUser(code);
       }
 
       return json(
@@ -150,43 +152,43 @@ export const handlers: Array<HttpHandler> = [
           token_type: '__MOCK_TOKEN_TYPE__',
         },
         { headers: { 'content-type': 'application/x-www-form-urlencoded' } }
-      )
+      );
     }
   ),
   http.get('https://api.github.com/user/emails', async ({ request }) => {
-    if (passthroughGitHub) return passthrough()
+    if (passthroughGitHub) return passthrough();
 
-    const user = await getUser(request)
-    if (user instanceof Response) return user
+    const user = await getUser(request);
+    if (user instanceof Response) return user;
 
-    return json(user.emails)
+    return json(user.emails);
   }),
   http.get('https://api.github.com/user/:id', async ({ params }) => {
-    if (passthroughGitHub) return passthrough()
+    if (passthroughGitHub) return passthrough();
 
     const mockUser = (await getGitHubUsers()).find(
       u => u.profile.id === Number(params.id)
-    )
-    if (mockUser) return json(mockUser.profile)
+    );
+    if (mockUser) return json(mockUser.profile);
 
-    return new Response('Not Found', { status: 404 })
+    return new Response('Not Found', { status: 404 });
   }),
   http.get('https://api.github.com/user', async ({ request }) => {
-    if (passthroughGitHub) return passthrough()
+    if (passthroughGitHub) return passthrough();
 
-    const user = await getUser(request)
-    if (user instanceof Response) return user
+    const user = await getUser(request);
+    if (user instanceof Response) return user;
 
-    return json(user.profile)
+    return json(user.profile);
   }),
   http.get('https://github.com/ghost.png', async () => {
-    if (passthroughGitHub) return passthrough()
+    if (passthroughGitHub) return passthrough();
 
-    const buffer = await fsExtra.readFile('./tests/fixtures/github/ghost.jpg')
+    const buffer = await fsExtra.readFile('./tests/fixtures/github/ghost.jpg');
     return new Response(buffer, {
       // the .png is not a mistake even though it looks like it... It's really a jpg
       // but the ghost image URL really has a png extension 😅
       headers: { 'content-type': 'image/jpg' },
-    })
+    });
   }),
-]
+];

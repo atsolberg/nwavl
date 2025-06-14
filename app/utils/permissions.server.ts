@@ -1,14 +1,14 @@
-import { data } from 'react-router'
-import { requireUserId } from './auth.server.ts'
-import { prisma } from './db.server.ts'
-import { type PermissionString, parsePermissionString } from './user.ts'
+import { data } from 'react-router';
+import { requireUserId } from './auth.server.ts';
+import { prisma } from './db.server.ts';
+import { type PermissionString, parsePermissionString } from './user.ts';
 
 export async function requireUserWithPermission(
   request: Request,
   permission: PermissionString
 ) {
-  const userId = await requireUserId(request)
-  const permissionData = parsePermissionString(permission)
+  const userId = await requireUserId(request);
+  const permissionData = parsePermissionString(permission);
   const user = await prisma.user.findFirst({
     select: { id: true },
     where: {
@@ -26,7 +26,7 @@ export async function requireUserWithPermission(
         },
       },
     },
-  })
+  });
   if (!user) {
     throw data(
       {
@@ -35,17 +35,17 @@ export async function requireUserWithPermission(
         message: `Unauthorized: required permissions: ${permission}`,
       },
       { status: 403 }
-    )
+    );
   }
-  return user.id
+  return user.id;
 }
 
 export async function requireUserWithRole(request: Request, name: string) {
-  const userId = await requireUserId(request)
+  const userId = await requireUserId(request);
   const user = await prisma.user.findFirst({
     select: { id: true },
     where: { id: userId, roles: { some: { name } } },
-  })
+  });
   if (!user) {
     throw data(
       {
@@ -54,7 +54,7 @@ export async function requireUserWithRole(request: Request, name: string) {
         message: `Unauthorized: required role: ${name}`,
       },
       { status: 403 }
-    )
+    );
   }
-  return user.id
+  return user.id;
 }

@@ -1,52 +1,52 @@
-import { parseWithZod } from '@conform-to/zod'
-import { parseFormData } from '@mjackson/form-data-parser'
-import { createId as cuid } from '@paralleldrive/cuid2'
-import { data, redirect, type ActionFunctionArgs } from 'react-router'
-import { z } from 'zod'
-import { requireUserId } from '#app/utils/auth.server.ts'
-import { prisma } from '#app/utils/db.server.ts'
-import { uploadNoteImage } from '#app/utils/storage.server.ts'
+import { parseWithZod } from '@conform-to/zod';
+import { parseFormData } from '@mjackson/form-data-parser';
+import { createId as cuid } from '@paralleldrive/cuid2';
+import { data, redirect, type ActionFunctionArgs } from 'react-router';
+import { z } from 'zod';
+import { requireUserId } from '#app/utils/auth.server.ts';
+import { prisma } from '#app/utils/db.server.ts';
+import { uploadNoteImage } from '#app/utils/storage.server.ts';
 import {
   MAX_UPLOAD_SIZE,
   NoteEditorSchema,
   type ImageFieldset,
-} from './__note-editor'
+} from './__note-editor';
 
 function imageHasFile(
   image: ImageFieldset
 ): image is ImageFieldset & { file: NonNullable<ImageFieldset['file']> } {
-  return Boolean(image.file?.size && image.file?.size > 0)
+  return Boolean(image.file?.size && image.file?.size > 0);
 }
 
 function imageHasId(
   image: ImageFieldset
 ): image is ImageFieldset & { id: string } {
-  return Boolean(image.id)
+  return Boolean(image.id);
 }
 
 export async function action({ request }: ActionFunctionArgs) {
-  const userId = await requireUserId(request)
+  const userId = await requireUserId(request);
 
   const formData = await parseFormData(request, {
     maxFileSize: MAX_UPLOAD_SIZE,
-  })
+  });
 
   const submission = await parseWithZod(formData, {
     schema: NoteEditorSchema.superRefine(async (data, ctx) => {
-      if (!data.id) return
+      if (!data.id) return;
 
       const note = await prisma.note.findUnique({
         select: { id: true },
         where: { id: data.id, ownerId: userId },
-      })
+      });
       if (!note) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           message: 'Note not found',
-        })
+        });
       }
     }).transform(async ({ images = [], ...data }) => {
-      const noteId = data.id ?? cuid()
+      const noteId = data.id ?? cuid();
       return {
         ...data,
         id: noteId,
@@ -57,12 +57,12 @@ export async function action({ request }: ActionFunctionArgs) {
                 id: i.id,
                 altText: i.altText,
                 objectKey: await uploadNoteImage(userId, noteId, i.file),
-              }
+              };
             } else {
               return {
                 id: i.id,
                 altText: i.altText,
-              }
+              };
             }
           })
         ),
@@ -74,19 +74,19 @@ export async function action({ request }: ActionFunctionArgs) {
               return {
                 altText: image.altText,
                 objectKey: await uploadNoteImage(userId, noteId, image.file),
-              }
+              };
             })
         ),
-      }
+      };
     }),
     async: true,
-  })
+  });
 
   if (submission.status !== 'success') {
     return data(
       { result: submission.reply() },
       { status: submission.status === 'error' ? 400 : 200 }
-    )
+    );
   }
 
   const {
@@ -95,7 +95,7 @@ export async function action({ request }: ActionFunctionArgs) {
     content,
     imageUpdates = [],
     newImages = [],
-  } = submission.value
+  } = submission.value;
 
   const updatedNote = await prisma.note.upsert({
     select: { id: true, owner: { select: { username: true } } },
@@ -123,9 +123,9 @@ export async function action({ request }: ActionFunctionArgs) {
         create: newImages,
       },
     },
-  })
+  });
 
   return redirect(
     `/users/${updatedNote.owner.username}/notes/${updatedNote.id}`
-  )
+  );
 }

@@ -1,6 +1,6 @@
-import * as React from 'react'
+import * as React from 'react';
 
-import { cn } from '#app/utils/misc.tsx'
+import { cn } from '#app/utils/misc.tsx';
 
 const Textarea = ({
   className,
@@ -14,7 +14,7 @@ const Textarea = ({
       )}
       {...props}
     />
-  )
-}
+  );
+};
 
-export { Textarea }
+export { Textarea };

@@ -1,7 +1,7 @@
-import { OTPInput, OTPInputContext } from 'input-otp'
-import * as React from 'react'
+import { OTPInput, OTPInputContext } from 'input-otp';
+import * as React from 'react';
 
-import { cn } from '#app/utils/misc.tsx'
+import { cn } from '#app/utils/misc.tsx';
 
 const InputOTP = ({
   className,
@@ -17,7 +17,7 @@ const InputOTP = ({
     className={cn('disabled:cursor-not-allowed', className)}
     {...props}
   />
-)
+);
 
 const InputOTPGroup = ({
   className,
@@ -28,19 +28,19 @@ const InputOTPGroup = ({
     className={cn('flex items-center', className)}
     {...props}
   />
-)
+);
 
 const InputOTPSlot = ({
   index,
   className,
   ...props
 }: React.ComponentProps<'div'> & {
-  index: number
+  index: number;
 }) => {
-  const inputOTPContext = React.useContext(OTPInputContext)
-  const slot = inputOTPContext.slots[index]
-  if (!slot) throw new Error('Invalid slot index')
-  const { char, hasFakeCaret, isActive } = slot
+  const inputOTPContext = React.useContext(OTPInputContext);
+  const slot = inputOTPContext.slots[index];
+  if (!slot) throw new Error('Invalid slot index');
+  const { char, hasFakeCaret, isActive } = slot;
 
   return (
     <div
@@ -59,11 +59,11 @@ const InputOTPSlot = ({
         </div>
       )}
     </div>
-  )
-}
+  );
+};
 
 const InputOTPSeparator = (props: React.ComponentProps<'div'>) => (
   <div data-slot="input-otp-separator" className="flex-1" {...props}></div>
-)
+);
 
-export { InputOTP, InputOTPGroup, InputOTPSlot, InputOTPSeparator }
+export { InputOTP, InputOTPGroup, InputOTPSlot, InputOTPSeparator };

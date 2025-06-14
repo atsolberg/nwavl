@@ -1,25 +1,25 @@
-import { faker } from '@faker-js/faker'
-import { prisma } from '#app/utils/db.server.ts'
-import { MOCK_CODE_GITHUB } from '#app/utils/providers/constants'
+import { faker } from '@faker-js/faker';
+import { prisma } from '#app/utils/db.server.ts';
+import { MOCK_CODE_GITHUB } from '#app/utils/providers/constants';
 import {
   createPassword,
   createUser,
   getNoteImages,
   getUserImages,
-} from '#tests/db-utils.ts'
-import { insertGitHubUser } from '#tests/mocks/github.ts'
+} from '#tests/db-utils.ts';
+import { insertGitHubUser } from '#tests/mocks/github.ts';
 
 async function seed() {
-  console.log('🌱 Seeding...')
-  console.time(`🌱 Database has been seeded`)
+  console.log('🌱 Seeding...');
+  console.time(`🌱 Database has been seeded`);
 
-  const totalUsers = 5
-  console.time(`👤 Created ${totalUsers} users...`)
-  const noteImages = await getNoteImages()
-  const userImages = await getUserImages()
+  const totalUsers = 5;
+  console.time(`👤 Created ${totalUsers} users...`);
+  const noteImages = await getNoteImages();
+  const userImages = await getUserImages();
 
   for (let index = 0; index < totalUsers; index++) {
-    const userData = createUser()
+    const userData = createUser();
     const user = await prisma.user.create({
       select: { id: true },
       data: {
@@ -27,21 +27,21 @@ async function seed() {
         password: { create: createPassword(userData.username) },
         roles: { connect: { name: 'user' } },
       },
-    })
+    });
 
     // Upload user profile image
-    const userImage = userImages[index % userImages.length]
+    const userImage = userImages[index % userImages.length];
     if (userImage) {
       await prisma.userImage.create({
         data: {
           userId: user.id,
           objectKey: userImage.objectKey,
         },
-      })
+      });
     }
 
     // Create notes with images
-    const notesCount = faker.number.int({ min: 1, max: 3 })
+    const notesCount = faker.number.int({ min: 1, max: 3 });
     for (let noteIndex = 0; noteIndex < notesCount; noteIndex++) {
       const note = await prisma.note.create({
         select: { id: true },
@@ -50,13 +50,13 @@ async function seed() {
           content: faker.lorem.paragraphs(),
           ownerId: user.id,
         },
-      })
+      });
 
       // Add images to note
-      const noteImageCount = faker.number.int({ min: 1, max: 3 })
+      const noteImageCount = faker.number.int({ min: 1, max: 3 });
       for (let imageIndex = 0; imageIndex < noteImageCount; imageIndex++) {
-        const imgNumber = faker.number.int({ min: 0, max: 9 })
-        const noteImage = noteImages[imgNumber]
+        const imgNumber = faker.number.int({ min: 0, max: 9 });
+        const noteImage = noteImages[imgNumber];
         if (noteImage) {
           await prisma.noteImage.create({
             data: {
@@ -64,14 +64,14 @@ async function seed() {
               altText: noteImage.altText,
               objectKey: noteImage.objectKey,
             },
-          })
+          });
         }
       }
     }
   }
-  console.timeEnd(`👤 Created ${totalUsers} users...`)
+  console.timeEnd(`👤 Created ${totalUsers} users...`);
 
-  console.time(`🐨 Created admin user "kody"`)
+  console.time(`🐨 Created admin user "kody"`);
 
   const kodyImages = {
     kodyUser: { objectKey: 'user/kody.png' },
@@ -104,9 +104,9 @@ async function seed() {
       altText: 'a cute cartoon koala kicking a soccer ball on a soccer field ',
       objectKey: 'kody-notes/koala-soccer.png',
     },
-  }
+  };
 
-  const githubUser = await insertGitHubUser(MOCK_CODE_GITHUB)
+  const githubUser = await insertGitHubUser(MOCK_CODE_GITHUB);
 
   const kody = await prisma.user.create({
     select: { id: true },
@@ -123,14 +123,14 @@ async function seed() {
       },
       roles: { connect: [{ name: 'admin' }, { name: 'user' }] },
     },
-  })
+  });
 
   await prisma.userImage.create({
     data: {
       userId: kody.id,
       objectKey: kodyImages.kodyUser.objectKey,
     },
-  })
+  });
 
   // Create Kody's notes
   const kodyNotes = [
@@ -218,7 +218,7 @@ async function seed() {
         "Just got back from the most amazing game. I've been playing soccer for a long time, but I've not once scored a goal. Well, today all that changed! I finally scored my first ever goal.\n\nI'm in an indoor league, and my team's not the best, but we're pretty good and I have fun, that's all that really matters. Anyway, I found myself at the other end of the field with the ball. It was just me and the goalie. I normally just kick the ball and hope it goes in, but the ball was already rolling toward the goal. The goalie was about to get the ball, so I had to charge. I managed to get possession of the ball just before the goalie got it. I brought it around the goalie and had a perfect shot. I screamed so loud in excitement. After all these years playing, I finally scored a goal!\n\nI know it's not a lot for most folks, but it meant a lot to me. We did end up winning the game by one. It makes me feel great that I had a part to play in that.\n\nIn this team, I'm the captain. I'm constantly cheering my team on. Even after getting injured, I continued to come and watch from the side-lines. I enjoy yelling (encouragingly) at my team mates and helping them be the best they can. I'm definitely not the best player by a long stretch. But I really enjoy the game. It's a great way to get exercise and have good social interactions once a week.\n\nThat said, it can be hard to keep people coming and paying dues and stuff. If people don't show up it can be really hard to find subs. I have a list of people I can text, but sometimes I can't find anyone.\n\nBut yeah, today was awesome. I felt like more than just a player that gets in the way of the opposition, but an actual asset to the team. Really great feeling.\n\nAnyway, I'm rambling at this point and really this is just so we can have a note that's pretty long to test things out. I think it's long enough now... Cheers!",
       images: [kodyImages.koalaSoccer],
     },
-  ]
+  ];
 
   for (const noteData of kodyNotes) {
     const note = await prisma.note.create({
@@ -229,7 +229,7 @@ async function seed() {
         content: noteData.content,
         ownerId: kody.id,
       },
-    })
+    });
 
     for (const image of noteData.images) {
       await prisma.noteImage.create({
@@ -238,23 +238,23 @@ async function seed() {
           altText: image.altText,
           objectKey: image.objectKey,
         },
-      })
+      });
     }
   }
 
-  console.timeEnd(`🐨 Created admin user "kody"`)
+  console.timeEnd(`🐨 Created admin user "kody"`);
 
-  console.timeEnd(`🌱 Database has been seeded`)
+  console.timeEnd(`🌱 Database has been seeded`);
 }
 
 seed()
   .catch(e => {
-    console.error(e)
-    process.exit(1)
+    console.error(e);
+    process.exit(1);
   })
   .finally(async () => {
-    await prisma.$disconnect()
-  })
+    await prisma.$disconnect();
+  });
 
 // we're ok to import from the test directory in this file
 /*
