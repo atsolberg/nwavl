@@ -94,67 +94,62 @@ function PreserviceChecklist() {
       <Heading as="h3" size="md">
         At 10:15
       </Heading>
-      <p>
-        <Checklist>
-          <ChecklistItem>
-            🎶 Hit the "Pre-service Audio" button on the StreamDeck
-          </ChecklistItem>
-          <ChecklistItem>📺 Set StreamDeck program to 'Pro'</ChecklistItem>
-        </Checklist>
-      </p>
+      <Checklist>
+        <ChecklistItem>
+          🎶 Hit the "Pre-service Audio" button on the StreamDeck
+        </ChecklistItem>
+        <ChecklistItem>📺 Set StreamDeck program to 'Pro'</ChecklistItem>
+      </Checklist>
 
       <Heading as="h3" size="md">
         At 10:20 - Resi should be streaming
       </Heading>
-      <p>
-        <Checklist>
-          <ChecklistItem>
-            <i className="fa-brands fa-youtube text-red-700" /> Open the 'Go
-            Live' page from{' '}
-            <a
-              target="_blank"
-              className="text-sky-500 underline-offset-4 hover:underline"
-              href="https://studio.youtube.com/"
-            >
-              <i className="fa-solid fa-arrow-up-right-from-square text-sm" />{' '}
-              YouTube Studio
-            </a>{' '}
-            , click the schedule tab, click the live stream for today.
-          </ChecklistItem>
-          <ChecklistItem>
-            <i className="fa-brands fa-youtube text-red-700" /> Check stream
-            audio on youtube
-          </ChecklistItem>
-        </Checklist>
-      </p>
+      <Checklist>
+        <ChecklistItem>
+          <i className="fa-brands fa-youtube text-red-700" aria-hidden /> Open
+          the 'Go Live' page from{' '}
+          <a
+            target="_blank"
+            className="text-sky-500 underline-offset-4 hover:underline"
+            href="https://studio.youtube.com/"
+          >
+            <i
+              className="fa-solid fa-arrow-up-right-from-square text-sm"
+              aria-hidden
+            />{' '}
+            YouTube Studio
+          </a>{' '}
+          , click the schedule tab, click the live stream for today.
+        </ChecklistItem>
+        <ChecklistItem>
+          <i className="fa-brands fa-youtube text-red-700" aria-hidden /> Check
+          stream audio on youtube
+        </ChecklistItem>
+      </Checklist>
 
       <Heading as="h3" size="md">
         After Praise and Worship
       </Heading>
-      <p>
-        <Checklist>
-          <ChecklistItem>🎵 Take out "Words" key</ChecklistItem>
-        </Checklist>
-      </p>
+      <Checklist>
+        <ChecklistItem>🎵 Take out "Words" key</ChecklistItem>
+      </Checklist>
 
       <Heading as="h3" size="md">
         After Service
       </Heading>
-      <p>
-        <Checklist>
-          <ChecklistItem>
-            🎙️ Get audio file from soundboard for podcast
-          </ChecklistItem>
-          <ChecklistItem>🖥️ Turn off monitors in av room</ChecklistItem>
-          <ChecklistItem>🎥 Turn off cameras</ChecklistItem>
-          <ChecklistItem>
-            📺 Turn off tv's in sanctuary, and the lobby
-          </ChecklistItem>
-          <ChecklistItem>
-            💡 Make sure the sound guy turned off the lights in the sanctuary
-          </ChecklistItem>
-        </Checklist>
-      </p>
+      <Checklist>
+        <ChecklistItem>
+          🎙️ Get audio file from soundboard for podcast
+        </ChecklistItem>
+        <ChecklistItem>🖥️ Turn off monitors in av room</ChecklistItem>
+        <ChecklistItem>🎥 Turn off cameras</ChecklistItem>
+        <ChecklistItem>
+          📺 Turn off tv's in sanctuary, and the lobby
+        </ChecklistItem>
+        <ChecklistItem>
+          💡 Make sure the sound guy turned off the lights in the sanctuary
+        </ChecklistItem>
+      </Checklist>
     </section>
   );
 }

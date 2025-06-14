@@ -250,15 +250,24 @@ function Header() {
               'dark:text-slate-200'
             )}
           >
-            <Link className="px-3 text-sky-500 hover:text-sky-600" to="/">
-              <i className="fa-solid fa-clipboard-list text-lg" /> Checklist
-            </Link>
-            <Link
-              className="px-3 text-sky-500 hover:text-sky-600"
-              to="/troubleshooting"
-            >
-              <i className="fa-solid fa-circle-question text-lg" /> Help
-            </Link>
+            <li>
+              <Link className="px-3 text-sky-500 hover:text-sky-600" to="/">
+                <i className="fa-solid fa-clipboard-list text-lg" aria-hidden />{' '}
+                Checklist
+              </Link>
+            </li>
+            <li>
+              <Link
+                className="px-3 text-sky-500 hover:text-sky-600"
+                to="/troubleshooting"
+              >
+                <i
+                  className="fa-solid fa-circle-question text-lg"
+                  aria-hidden
+                />{' '}
+                Help
+              </Link>
+            </li>
           </ul>
 
           {user ? (
