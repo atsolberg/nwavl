@@ -19,7 +19,7 @@ import { EpicProgress } from './components/progress-bar.tsx';
 import { SearchBar } from './components/search-bar.tsx';
 import { useToast } from './components/toaster.tsx';
 import { Button } from './components/ui/button.tsx';
-import { href as iconsHref } from './components/ui/icon.tsx';
+import { href as iconsHref, Icon } from './components/ui/icon.tsx';
 import { EpicToaster } from './components/ui/sonner.tsx';
 import { UserDropdown } from './components/user-dropdown.tsx';
 import {
@@ -190,14 +190,88 @@ export function Layout({ children }: { children: React.ReactNode }) {
   );
 }
 
-function App() {
-  const data = useLoaderData<typeof loader>();
+function Logo() {
+  return (
+    <Link to="/" className="font-bold">
+      📺 NW AVL
+    </Link>
+  );
+}
+
+function Header() {
   const user = useOptionalUser();
-  const theme = useTheme();
   const matches = useMatches();
   const isOnSearchPage = matches.find(m => m.id === 'routes/users+/index');
   const searchBar =
     !user || isOnSearchPage ? null : <SearchBar status="idle" />;
+
+  return (
+    <header
+      className={cn(
+        'sticky',
+        'w-full',
+        'top-0',
+        'z-40',
+        'transition-colors',
+        'duration-500',
+
+        'border-b',
+        'border-slate-200',
+        'dark:border-slate-700',
+        'dark:border-slate-50/[0.06]',
+
+        'backdrop-blur',
+        'bg-white',
+        'dark:bg-slate-900/75'
+      )}
+    >
+      <nav
+        className={cn(
+          'container py-6',
+          'flex flex-wrap items-center justify-between gap-4',
+          'sm:flex-nowrap',
+          'md:gap-8'
+        )}
+      >
+        <Logo />
+        <div className="ml-auto hidden max-w-sm flex-1 sm:block">
+          {searchBar}
+        </div>
+        <div className="flex items-center gap-10">
+          <ul
+            className={cn(
+              'flex gap-8',
+              'text-sm leading-6 font-semibold text-slate-700',
+              'dark:text-slate-200'
+            )}
+          >
+            <Link className="hover:text-sky-500" to="/">
+              <Icon name="pencil-1" />{' '}
+              <span className="hidden md:inline">Checklist</span>
+            </Link>
+            <Link className="hover:text-sky-500" to="/troubleshooting">
+              <Icon name="question-mark-circled" />{' '}
+              <span className="hidden md:inline">Troubleshooting</span>
+            </Link>
+          </ul>
+
+          {user ? (
+            <UserDropdown />
+          ) : (
+            <Button asChild variant="default" size="sm">
+              <Link to="/login">Log In</Link>
+            </Button>
+          )}
+        </div>
+        <div className="block w-full sm:hidden">{searchBar}</div>
+      </nav>
+    </header>
+  );
+}
+
+function App() {
+  const data = useLoaderData<typeof loader>();
+  const theme = useTheme();
   useToast(data.toast);
 
   return (
@@ -206,50 +280,19 @@ function App() {
       getSrc={getImgSrc}
     >
       <div className="flex min-h-screen flex-col justify-between">
-        <header className="container py-6">
-          <nav className="flex flex-wrap items-center justify-between gap-4 sm:flex-nowrap md:gap-8">
-            <Logo />
-            <div className="ml-auto hidden max-w-sm flex-1 sm:block">
-              {searchBar}
-            </div>
-            <div className="flex items-center gap-10">
-              {user ? (
-                <UserDropdown />
-              ) : (
-                <Button asChild variant="default" size="lg">
-                  <Link to="/login">Log In</Link>
-                </Button>
-              )}
-            </div>
-            <div className="block w-full sm:hidden">{searchBar}</div>
-          </nav>
-        </header>
+        <Header />
 
         <div className="flex flex-1 flex-col">
           <Outlet />
         </div>
 
-        <div className="container flex justify-between pb-5">
-          <Logo />
+        <div className="container flex justify-end pb-5">
           <ThemeSwitch userPreference={data.requestInfo.userPrefs.theme} />
         </div>
       </div>
       <EpicToaster closeButton position="top-center" theme={theme} />
       <EpicProgress />
     </OpenImgContextProvider>
-  );
-}
-
-function Logo() {
-  return (
-    <Link to="/" className="group grid leading-snug">
-      <span className="font-light transition group-hover:-translate-x-1">
-        epic
-      </span>
-      <span className="font-bold transition group-hover:translate-x-1">
-        notes
-      </span>
-    </Link>
   );
 }
 
@@ -264,6 +307,6 @@ function AppWithProviders() {
 
 export default AppWithProviders;
 
-// this is a last resort error boundary. There's not much useful information we
-// can offer at this level.
+// This is a last resort error boundary.
+// There's not much useful information we can offer at this level.
 export const ErrorBoundary = GeneralErrorBoundary;
