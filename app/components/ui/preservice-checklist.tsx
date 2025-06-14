@@ -3,124 +3,145 @@ import React from 'react';
 import ChecklistItem from '#app/components/ui/checklist-item';
 import ExpandableImage from '#app/components/ui/expandable-image';
 import Heading from '#app/components/ui/heading';
+import { cn } from '#app/utils/misc';
+
+function Checklist({ children }: React.ComponentProps<'ul'>) {
+  return <ul className="mb-8 flex flex-col gap-3">{children}</ul>;
+}
 
 function Description(props: React.ComponentProps<'div'>) {
-  return <div className="rounded-sm bg-slate-700 p-2" {...props} />;
+  return (
+    <div
+      className={cn(
+        'mt-2 rounded-sm bg-slate-200 p-2 text-black',
+        'dark:bg-slate-800 dark:text-slate-400'
+      )}
+      {...props}
+    />
+  );
 }
 
 function PreserviceChecklist() {
   return (
     <section>
-      <ul>
+      <Checklist>
+        <ChecklistItem>🔌 Power-cycle the switcher and Resi box</ChecklistItem>
+
         <ChecklistItem>
-          On the streaming pc, Start OBS, Streamdeck Companion, Atem, and Chrome
-          (https://studio.resi.io/)
+          🖥️ On the streaming pc, Start OBS, StreamDeck Companion, Atem, and
+          Chrome (https://studio.resi.io/)
         </ChecklistItem>
+
         <ChecklistItem>
-          Turn on camera's 1, 2, and 3.
+          🎥 Turn on camera's 1 and 2
           <ExpandableImage src="/img/camera_2.jpg" alt="" className="mt-1" />
         </ChecklistItem>
+
         <ChecklistItem>
-          Check Comms
+          📺 Turn on sanctuary tv's, DSM tv, and lobby tv's
+        </ChecklistItem>
+
+        <ChecklistItem>
+          🎧 Check comms
           <Description>
-            Hit the "com ON" button on the Streamdeck and verify with someone
-            else that you can hear each other from the av room and camera 1.
+            Verify with someone else that you can hear each other from the av
+            room and camera 1
           </Description>
         </ChecklistItem>
+
         <ChecklistItem>
-          Reset Cameras (Hit the "Camera Reset" button on streamdeck)
+          🎶 Pre-service Audio Works
           <Description>
-            After turning off cameras the week before, when they are turned on,
-            they don't have the same settings anymore, and they values in Atem
-            won't match either. Hitting the reset button will set all the
-            cameras settings via Atem using a hand-built config file.
+            Hit the "pre audio" Pre-service button on the StreamDeck and verify
+            you hear the preservice music in the headphones. You might need to
+            start the music from ProPresenter
           </Description>
         </ChecklistItem>
+
         <ChecklistItem>
-          Pre-service Audio Works{' '}
+          🚀 Start macro works
           <Description>
-            Hit the "pre audio" Pre-service button on the streamdeck and verify
-            you hear the music in the headphones.
-          </Description>
-        </ChecklistItem>
-        <ChecklistItem>
-          Service Audio Works
-          <Description>
-            Hit the "start" button on the Streamdeck and verify you hear the
+            Hit the "start" button on the StreamDeck and verify you hear the
             band practicing. The "start" button does a couple things: the
-            pre-service audio channel on the Streamdeck should get faded down,
+            pre-service audio channel on the StreamDeck should get faded down,
             the audio feed from the room should get faded up, and the video feed
-            should get faded to camera 2.
+            should get faded to camera 2
           </Description>
         </ChecklistItem>
+
         <ChecklistItem>
-          Scriptures Key Works
+          📖 Scriptures Key Works
           <Description>
-            Have the pro op put a scripture up and then hit the "Scripture"
-            button on the stream deck, verify that the scripture is looking good
-            on the lower third of the video feed.
+            Have the pro-op put a scripture up and then hit the "Words" button
+            on the StreamDeck, verify that the scripture is looking good on the
+            lower third
           </Description>
         </ChecklistItem>
         <ChecklistItem>
-          Words Key Works
+          🎵 Words Key Works
           <Description>
-            Have the pro op put a song slide up and then hit the "Words" button
-            on the stream deck, verify that the slide's words appear on the
-            video feed.
+            Have the pro-op put a song slide up and verify that the slide's
+            words appear correctly. If the 'Look' didn't change to the praise
+            and worship look, hit the "Look PW".
           </Description>
         </ChecklistItem>
         <ChecklistItem>
-          Make sure podcast backup audio stick is plugged into the sound board
+          🎙️ Make sure podcast backup audio stick is plugged into the sound
+          board
         </ChecklistItem>
-      </ul>
+      </Checklist>
 
       <Heading as="h3" size="md">
         At 10:15
       </Heading>
       <p>
-        <ul>
+        <Checklist>
           <ChecklistItem>
-            Make sure pre-service audio is running instead of live feed
+            🎶 Hit the "Pre-service Audio" button on the StreamDeck
           </ChecklistItem>
-          <ChecklistItem>Set StreamDeck program to 'Pro'</ChecklistItem>
-        </ul>
+          <ChecklistItem>📺 Set StreamDeck program to 'Pro'</ChecklistItem>
+        </Checklist>
       </p>
 
       <Heading as="h3" size="md">
         At 10:20 - Resi should be streaming
       </Heading>
       <p>
-        <ul>
+        <Checklist>
           <ChecklistItem>
-            Open 'Go Live' page from the YouTube Studio, click the schedule tab,
-            click the live stream for today.
+            📺 Open 'Go Live' page from the YouTube Studio, click the schedule
+            tab, click the live stream for today.
           </ChecklistItem>
-          <ChecklistItem>Check stream audio on youtube</ChecklistItem>
-          <ChecklistItem>Check stream audio on facebook</ChecklistItem>
-        </ul>
+          <ChecklistItem>📺 Check stream audio on youtube</ChecklistItem>
+        </Checklist>
       </p>
 
       <Heading as="h3" size="md">
         After Praise and Worship
       </Heading>
       <p>
-        <ul>
-          <ChecklistItem>Take out Words Key</ChecklistItem>
-        </ul>
+        <Checklist>
+          <ChecklistItem>🎵 Take out "Words" key</ChecklistItem>
+        </Checklist>
       </p>
 
       <Heading as="h3" size="md">
         After Service
       </Heading>
       <p>
-        <ul>
+        <Checklist>
           <ChecklistItem>
-            Get audio file from soundboard for podcast
+            🎙️ Get audio file from soundboard for podcast
           </ChecklistItem>
-          <ChecklistItem>Turn off monitors in av room</ChecklistItem>
-          <ChecklistItem>Turn off cameras, and put lens caps on</ChecklistItem>
-          <ChecklistItem>Turn off front screens and DSM</ChecklistItem>
-        </ul>
+          <ChecklistItem>🖥️ Turn off monitors in av room</ChecklistItem>
+          <ChecklistItem>🎥 Turn off cameras</ChecklistItem>
+          <ChecklistItem>
+            📺 Turn off tv's in sanctuary, and the lobby
+          </ChecklistItem>
+          <ChecklistItem>
+            💡 Make sure the sound guy turned off the lights in the sanctuary
+          </ChecklistItem>
+        </Checklist>
       </p>
     </section>
   );

@@ -286,9 +286,24 @@ function App() {
           <Outlet />
         </div>
 
-        <div className="container flex justify-end pb-5">
-          <ThemeSwitch userPreference={data.requestInfo.userPrefs.theme} />
-        </div>
+        <footer
+          className={cn(
+            'transition-colors duration-500',
+
+            'border-t',
+            'border-slate-200',
+            'dark:border-slate-700',
+            'dark:border-slate-50/[0.06]',
+
+            'backdrop-blur',
+            'bg-white',
+            'dark:bg-slate-900/75'
+          )}
+        >
+          <div className="container flex justify-end py-5">
+            <ThemeSwitch userPreference={data.requestInfo.userPrefs.theme} />
+          </div>
+        </footer>
       </div>
       <EpicToaster closeButton position="top-center" theme={theme} />
       <EpicProgress />
