@@ -109,9 +109,17 @@ function PreserviceChecklist() {
       <p>
         <Checklist>
           <ChecklistItem>
-            <i className="fa-brands fa-youtube text-red-700" /> Open 'Go Live'
-            page from the YouTube Studio, click the schedule tab, click the live
-            stream for today.
+            <i className="fa-brands fa-youtube text-red-700" /> Open the 'Go
+            Live' page from{' '}
+            <a
+              target="_blank"
+              className="text-sky-500 underline-offset-4 hover:underline"
+              href="https://studio.youtube.com/"
+            >
+              <i className="fa-solid fa-arrow-up-right-from-square text-sm" />{' '}
+              YouTube Studio
+            </a>{' '}
+            , click the schedule tab, click the live stream for today.
           </ChecklistItem>
           <ChecklistItem>
             <i className="fa-brands fa-youtube text-red-700" /> Check stream
