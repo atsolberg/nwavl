@@ -8,44 +8,44 @@ import { NoteEditor } from './__note-editor.tsx'
 export { action } from './__note-editor.server.tsx'
 
 export async function loader({ params, request }: Route.LoaderArgs) {
-	const userId = await requireUserId(request)
-	const note = await prisma.note.findFirst({
-		select: {
-			id: true,
-			title: true,
-			content: true,
-			images: {
-				select: {
-					id: true,
-					altText: true,
-					objectKey: true,
-				},
-			},
-		},
-		where: {
-			id: params.noteId,
-			ownerId: userId,
-		},
-	})
-	invariantResponse(note, 'Not found', { status: 404 })
-	return { note }
+  const userId = await requireUserId(request)
+  const note = await prisma.note.findFirst({
+    select: {
+      id: true,
+      title: true,
+      content: true,
+      images: {
+        select: {
+          id: true,
+          altText: true,
+          objectKey: true,
+        },
+      },
+    },
+    where: {
+      id: params.noteId,
+      ownerId: userId,
+    },
+  })
+  invariantResponse(note, 'Not found', { status: 404 })
+  return { note }
 }
 
 export default function NoteEdit({
-	loaderData,
-	actionData,
+  loaderData,
+  actionData,
 }: Route.ComponentProps) {
-	return <NoteEditor note={loaderData.note} actionData={actionData} />
+  return <NoteEditor note={loaderData.note} actionData={actionData} />
 }
 
 export function ErrorBoundary() {
-	return (
-		<GeneralErrorBoundary
-			statusHandlers={{
-				404: ({ params }) => (
-					<p>No note with the id "{params.noteId}" exists</p>
-				),
-			}}
-		/>
-	)
+  return (
+    <GeneralErrorBoundary
+      statusHandlers={{
+        404: ({ params }) => (
+          <p>No note with the id "{params.noteId}" exists</p>
+        ),
+      }}
+    />
+  )
 }

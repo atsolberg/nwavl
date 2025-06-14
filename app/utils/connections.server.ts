@@ -5,17 +5,17 @@ import { type AuthProvider } from './providers/provider.ts'
 import { type Timings } from './timing.server.ts'
 
 export const providers: Record<ProviderName, AuthProvider> = {
-	github: new GitHubProvider(),
+  github: new GitHubProvider(),
 }
 
 export function handleMockAction(providerName: ProviderName, request: Request) {
-	return providers[providerName].handleMockAction(request)
+  return providers[providerName].handleMockAction(request)
 }
 
 export function resolveConnectionData(
-	providerName: ProviderName,
-	providerId: string,
-	options?: { timings?: Timings },
+  providerName: ProviderName,
+  providerId: string,
+  options?: { timings?: Timings }
 ) {
-	return providers[providerName].resolveConnectionData(providerId, options)
+  return providers[providerName].resolveConnectionData(providerId, options)
 }
