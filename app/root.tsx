@@ -1,4 +1,5 @@
 import { OpenImgContextProvider } from 'openimg/react';
+import React from 'react';
 import {
   data,
   Link,
@@ -19,7 +20,7 @@ import { EpicProgress } from './components/progress-bar.tsx';
 import { SearchBar } from './components/search-bar.tsx';
 import { useToast } from './components/toaster.tsx';
 import { Button } from './components/ui/button.tsx';
-import { href as iconsHref, Icon } from './components/ui/icon.tsx';
+import { href as iconsHref } from './components/ui/icon.tsx';
 import { EpicToaster } from './components/ui/sonner.tsx';
 import { UserDropdown } from './components/user-dropdown.tsx';
 import {
@@ -157,6 +158,10 @@ function Document({
           <meta name="robots" content="noindex, nofollow" />
         )}
         <Links />
+        <script
+          src="https://kit.fontawesome.com/fe766b0f79.js"
+          crossOrigin="anonymous"
+        ></script>
       </head>
       <body
         className={cn(
@@ -193,7 +198,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
 function Logo() {
   return (
     <Link to="/" className="font-bold">
-      📺 NW AVL
+      📺 <span className="hidden sm:inline">NW AVL</span>
     </Link>
   );
 }
@@ -227,7 +232,7 @@ function Header() {
     >
       <nav
         className={cn(
-          'container py-6',
+          'container py-3 md:py-6',
           'flex flex-wrap items-center justify-between gap-4',
           'sm:flex-nowrap',
           'md:gap-8'
@@ -240,30 +245,33 @@ function Header() {
         <div className="flex items-center gap-10">
           <ul
             className={cn(
-              'flex gap-8',
+              'flex',
               'text-sm leading-6 font-semibold text-slate-700',
               'dark:text-slate-200'
             )}
           >
-            <Link className="hover:text-sky-500" to="/">
-              <Icon name="pencil-1" />{' '}
-              <span className="hidden md:inline">Checklist</span>
+            <Link className="px-3 text-sky-600 hover:text-sky-500" to="/">
+              <i className="fa-solid fa-clipboard-list text-lg" /> Checklist
             </Link>
-            <Link className="hover:text-sky-500" to="/troubleshooting">
-              <Icon name="question-mark-circled" />{' '}
-              <span className="hidden md:inline">Troubleshooting</span>
+            <Link
+              className="px-3 text-sky-600 hover:text-sky-500"
+              to="/troubleshooting"
+            >
+              <i className="fa-solid fa-circle-question text-lg" /> Help
             </Link>
           </ul>
 
           {user ? (
             <UserDropdown />
           ) : (
-            <Button asChild variant="default" size="sm">
+            <Button asChild variant="secondary" size="sm">
               <Link to="/login">Log In</Link>
             </Button>
           )}
         </div>
-        <div className="block w-full sm:hidden">{searchBar}</div>
+        {searchBar ? (
+          <div className="block w-full sm:hidden">{searchBar}</div>
+        ) : null}
       </nav>
     </header>
   );
