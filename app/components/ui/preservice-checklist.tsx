@@ -70,20 +70,21 @@ function PreserviceChecklist() {
         </ChecklistItem>
 
         <ChecklistItem>
+          🎵 Words Key Works
+          <Description>
+            Have the pro-op put a song slide up and verify that the slide's
+            words appear correctly. If the 'Look' didn't change to the praise
+            and worship look, hit the "Look PW".
+          </Description>
+        </ChecklistItem>
+
+        <ChecklistItem>
           📖 Scripture Key Works
           <Description>
             Have the pro-op put a scripture up and then hit the "Scripture"
             button on the StreamDeck, verify that the scripture is looking good
             on the lower third. You may need to hit the "Look Message" button to
             change the look from PW to Message.
-          </Description>
-        </ChecklistItem>
-        <ChecklistItem>
-          🎵 Words Key Works
-          <Description>
-            Have the pro-op put a song slide up and verify that the slide's
-            words appear correctly. If the 'Look' didn't change to the praise
-            and worship look, hit the "Look PW".
           </Description>
         </ChecklistItem>
         <ChecklistItem>
