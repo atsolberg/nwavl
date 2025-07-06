@@ -70,11 +70,12 @@ function PreserviceChecklist() {
         </ChecklistItem>
 
         <ChecklistItem>
-          📖 Scriptures Key Works
+          📖 Scripture Key Works
           <Description>
-            Have the pro-op put a scripture up and then hit the "Words" button
-            on the StreamDeck, verify that the scripture is looking good on the
-            lower third
+            Have the pro-op put a scripture up and then hit the "Scripture"
+            button on the StreamDeck, verify that the scripture is looking good
+            on the lower third. You may need to hit the "Look Message" button to
+            change the look from PW to Message.
           </Description>
         </ChecklistItem>
         <ChecklistItem>
