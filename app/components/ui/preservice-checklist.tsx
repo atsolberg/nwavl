@@ -38,6 +38,12 @@ function PreserviceChecklist() {
         </ChecklistItem>
 
         <ChecklistItem>
+          🎥 Tune the camera's settings so that they look even and not too
+          bright. Camera 2 has a lot of reflection off the white wall so it
+          needs tuning of gain, temperature, and contrast usually.
+        </ChecklistItem>
+
+        <ChecklistItem>
           📺 Turn on sanctuary tv's, DSM tv, and lobby tv's
         </ChecklistItem>
 
@@ -45,7 +51,9 @@ function PreserviceChecklist() {
           🎧 Check comms
           <Description>
             Verify with someone else that you can hear each other from the av
-            room and camera 1
+            room and camera 1. Or key the mic to always on in the room, set your
+            phone next to it playing some music, and check the camera
+            headphones.
           </Description>
         </ChecklistItem>
 
