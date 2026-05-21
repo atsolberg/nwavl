@@ -28,8 +28,9 @@ function PreserviceChecklist() {
         <ChecklistItem>🔌 Power-cycle the switcher and Resi box</ChecklistItem>
 
         <ChecklistItem>
-          🖥️ On the streaming pc, Start OBS, StreamDeck Companion, Atem, and
-          Chrome (https://studio.resi.io/)
+          🖥️ On the streaming pc, start StreamDeck Companion, Atem, and Chrome
+          (https://studio.resi.io/) <br /> ⚠️ NOTE! Ensure that StreamDeck is
+          running now, it's necessary for atem macros to work.
         </ChecklistItem>
 
         <ChecklistItem>
